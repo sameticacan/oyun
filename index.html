@@ -899,6 +899,72 @@
       font-weight: 800;
     }
 
+    /* The newest journal entry is mirrored here so mobile players never miss it. */
+    .latest-event-toast {
+      --event-accent: var(--cyan);
+      --event-glow: rgba(52, 231, 228, .18);
+      position: fixed;
+      top: 82px;
+      left: 50%;
+      z-index: 350;
+      width: min(420px, calc(100vw - 32px));
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr);
+      gap: 11px;
+      align-items: center;
+      padding: 12px 15px;
+      border: 1px solid var(--event-accent);
+      border-radius: 16px;
+      color: var(--text);
+      background: linear-gradient(135deg, var(--event-glow), transparent 62%), var(--card-solid);
+      box-shadow: 0 14px 38px rgba(0, 0, 0, .3), 0 0 24px var(--event-glow);
+      opacity: 0;
+      visibility: hidden;
+      transform: translate(-50%, -10px);
+      pointer-events: none;
+    }
+
+    .latest-event-toast.is-visible {
+      visibility: visible;
+      animation: latestEventIn .3s ease-out both, latestEventOut .35s ease-in 2.15s forwards;
+    }
+
+    .latest-event-toast.good { --event-accent: var(--green); --event-glow: rgba(85, 239, 157, .18); }
+    .latest-event-toast.bad { --event-accent: var(--red); --event-glow: rgba(255, 93, 115, .2); }
+    .latest-event-toast.chaos { --event-accent: var(--pink); --event-glow: rgba(255, 79, 216, .2); }
+    .latest-event-toast.money { --event-accent: var(--yellow); --event-glow: rgba(255, 209, 102, .2); }
+    .latest-event-toast.achievement { --event-accent: #f8c7ff; --event-glow: rgba(139, 92, 246, .25); }
+
+    .latest-event-icon {
+      display: grid;
+      place-items: center;
+      width: 36px;
+      height: 36px;
+      border-radius: 11px;
+      background: var(--event-glow);
+      font-size: 1.2rem;
+    }
+
+    .latest-event-label {
+      display: block;
+      margin-bottom: 2px;
+      color: var(--event-accent);
+      font-size: .64rem;
+      font-weight: 950;
+      letter-spacing: .12em;
+      line-height: 1.2;
+      text-transform: uppercase;
+    }
+
+    .latest-event-message {
+      font-size: .9rem;
+      font-weight: 760;
+      line-height: 1.38;
+      overflow-wrap: anywhere;
+    }
+
+    .latest-event-message strong { color: var(--text); font-weight: 950; }
+
     .sound-text {
       position: fixed;
       z-index: 400;
@@ -936,6 +1002,14 @@
     @keyframes soundPop { 0% { opacity: 0; transform: translate(-50%,-50%) scale(.3) rotate(-15deg); } 45% { opacity: 1; transform: translate(-50%,-80%) scale(1.1) rotate(6deg); } 100% { opacity: 0; transform: translate(-50%,-150%) scale(1.25) rotate(-3deg); } }
     @keyframes toastIn { from { opacity: 0; transform: translateX(30px); } }
     @keyframes toastOut { to { opacity: 0; transform: translateX(30px); } }
+    @keyframes latestEventIn {
+      from { opacity: 0; transform: translate(-50%, -14px) scale(.98); }
+      to { opacity: 1; transform: translate(-50%, 0) scale(1); }
+    }
+    @keyframes latestEventOut {
+      from { opacity: 1; transform: translate(-50%, 0) scale(1); }
+      to { opacity: 0; transform: translate(-50%, -9px) scale(.99); }
+    }
     @keyframes confettiFall { to { transform: translate3d(var(--drift), 110vh, 0) rotate(900deg); } }
 
     @media (max-width: 1050px) {
@@ -968,6 +1042,18 @@
       .title-cloud-status { position: static; margin-bottom: 16px; }
       .top-actions .cloud-status { padding-inline: 9px; }
       .top-actions .cloud-status span:last-child { display: none; }
+      .latest-event-toast {
+        top: max(76px, calc(env(safe-area-inset-top) + 64px));
+        width: calc(100vw - 24px);
+        gap: 12px;
+        padding: 15px 16px;
+        border-width: 2px;
+        border-radius: 18px;
+        box-shadow: 0 16px 42px rgba(0, 0, 0, .38), 0 0 28px var(--event-glow);
+      }
+      .latest-event-icon { width: 42px; height: 42px; font-size: 1.4rem; }
+      .latest-event-label { font-size: .68rem; }
+      .latest-event-message { font-size: 1rem; line-height: 1.42; }
     }
 
     @media (prefers-reduced-motion: reduce) {
@@ -1148,6 +1234,14 @@
     </div>
   </div>
 
+  <div id="latestEventToast" class="latest-event-toast" role="status" aria-live="polite" aria-atomic="true">
+    <span class="latest-event-icon" aria-hidden="true">📣</span>
+    <div>
+      <span class="latest-event-label">Krallık duyurusu</span>
+      <div class="latest-event-message"></div>
+    </div>
+  </div>
+
   <div id="toastArea" aria-live="polite"></div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -1193,6 +1287,7 @@
     let dailyQuests = [];
     let modalLocked = false;
     let activeLeaderboardTab = 'all';
+    let latestEventToastTimer = null;
 
     const characterDefs = {
       student: {
@@ -1814,6 +1909,42 @@
       entry.innerHTML = message;
       $('#eventLog').prepend(entry);
       while ($('#eventLog').children.length > 40) $('#eventLog').lastElementChild.remove();
+      showLatestEventToast(message, tone);
+    }
+
+    function inferEventType(message, tone = '') {
+      if (['good', 'bad', 'chaos', 'money', 'achievement'].includes(tone)) {
+        if (!['good', 'bad'].includes(tone)) return tone;
+      }
+
+      const textHolder = document.createElement('div');
+      textHolder.innerHTML = message;
+      const text = (textHolder.textContent || '').toLocaleLowerCase('tr-TR');
+
+      if (/başarım|görev tamamlandı|ejderha yenildi|boss skoru|kilidi açıldı/.test(text)) return 'achievement';
+      if (/para|satın al|kazand|ödeme|ücret|kupon|altın|coin/.test(text)) return 'money';
+      if (/kaos|çark|zar|patla|goblin|portal|büyü/.test(text)) return 'chaos';
+      if (tone === 'bad' || /kaybet|bitti|kaçtı|yenil|kötü|hata|kırıldı|kısa devre/.test(text)) return 'bad';
+      if (tone === 'good' || /tamamla|hazır|kusursuz|başar|gurur|tebrik/.test(text)) return 'good';
+      return 'default';
+    }
+
+    function showLatestEventToast(message, tone = '') {
+      const toastElement = $('#latestEventToast');
+      const type = inferEventType(message, tone);
+      const icons = { default: '📣', good: '✨', bad: '⚠️', chaos: '🌀', money: '🪙', achievement: '🏆' };
+
+      clearTimeout(latestEventToastTimer);
+      toastElement.className = `latest-event-toast ${type}`;
+      toastElement.querySelector('.latest-event-icon').textContent = icons[type] || icons.default;
+      toastElement.querySelector('.latest-event-message').innerHTML = message;
+
+      /* Restart both animations when a newer event replaces the current one. */
+      void toastElement.offsetWidth;
+      toastElement.classList.add('is-visible');
+      latestEventToastTimer = setTimeout(() => {
+        toastElement.classList.remove('is-visible');
+      }, 2500);
     }
 
     function screenShake() {
