@@ -1,0 +1,2337 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#111229">
+  <title>Can Sıkıntısı Krallığı</title>
+  <style>
+    :root {
+      --bg: #0c0d21;
+      --bg-soft: #151735;
+      --card: rgba(27, 29, 65, .86);
+      --card-solid: #1b1d41;
+      --text: #f8f7ff;
+      --muted: #abaed0;
+      --pink: #ff4fd8;
+      --purple: #8b5cf6;
+      --cyan: #34e7e4;
+      --yellow: #ffd166;
+      --green: #55ef9d;
+      --red: #ff5d73;
+      --border: rgba(255, 255, 255, .12);
+      --shadow: 0 18px 55px rgba(0, 0, 0, .28);
+      --radius: 22px;
+    }
+
+    body.light {
+      --bg: #f5f0ff;
+      --bg-soft: #ece4ff;
+      --card: rgba(255, 255, 255, .82);
+      --card-solid: #fff;
+      --text: #242044;
+      --muted: #68628a;
+      --border: rgba(67, 49, 119, .13);
+      --shadow: 0 18px 50px rgba(91, 65, 143, .16);
+    }
+
+    * { box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      min-height: 100vh;
+      margin: 0;
+      overflow-x: hidden;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 10% 10%, rgba(255, 79, 216, .16), transparent 26rem),
+        radial-gradient(circle at 90% 20%, rgba(52, 231, 228, .13), transparent 25rem),
+        linear-gradient(145deg, var(--bg), var(--bg-soft));
+      font-family: Inter, ui-rounded, "Segoe UI", system-ui, sans-serif;
+      transition: background .3s, color .3s;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      opacity: .35;
+      pointer-events: none;
+      background-image: radial-gradient(var(--border) 1px, transparent 1px);
+      background-size: 25px 25px;
+    }
+
+    button { font: inherit; }
+
+    button:focus-visible {
+      outline: 3px solid var(--cyan);
+      outline-offset: 3px;
+    }
+
+    .hidden { display: none !important; }
+
+    .screen {
+      min-height: 100vh;
+      width: 100%;
+    }
+
+    /* Title screen */
+    #titleScreen {
+      display: grid;
+      place-items: center;
+      padding: 24px;
+      text-align: center;
+    }
+
+    .title-card {
+      position: relative;
+      width: min(1000px, calc(100vw - 48px));
+      padding: clamp(28px, 5vw, 56px);
+      overflow: hidden;
+      border: 1px solid var(--border);
+      border-radius: 36px;
+      background: var(--card);
+      box-shadow: var(--shadow), 0 0 60px rgba(139, 92, 246, .14);
+      backdrop-filter: blur(18px);
+    }
+
+    .crown {
+      display: block;
+      margin-bottom: 12px;
+      font-size: clamp(4rem, 14vw, 7rem);
+      filter: drop-shadow(0 0 18px rgba(255, 209, 102, .5));
+      animation: float 3s ease-in-out infinite;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(2.4rem, 9vw, 5.2rem);
+      line-height: .95;
+      letter-spacing: -.06em;
+      background: linear-gradient(90deg, var(--pink), var(--yellow), var(--cyan));
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+
+    .subtitle {
+      max-width: 540px;
+      margin: 22px auto 30px;
+      color: var(--muted);
+      font-size: clamp(1rem, 3vw, 1.2rem);
+      line-height: 1.65;
+    }
+
+    .player-entry {
+      width: min(380px, 100%);
+      margin: 0 auto 22px;
+      text-align: left;
+    }
+
+    .player-entry label {
+      display: block;
+      margin: 0 0 7px 4px;
+      color: var(--muted);
+      font-size: .8rem;
+      font-weight: 900;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+
+    .player-entry input {
+      width: 100%;
+      padding: 13px 16px;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      outline: 0;
+      color: var(--text);
+      background: rgba(127, 127, 150, .12);
+      box-shadow: inset 0 2px 7px rgba(0, 0, 0, .08);
+      font: inherit;
+      font-weight: 800;
+      text-align: center;
+      transition: border-color .2s, box-shadow .2s;
+    }
+
+    .player-entry input:focus {
+      border-color: var(--cyan);
+      box-shadow: 0 0 0 4px rgba(52, 231, 228, .12);
+    }
+
+    .character-picker {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 9px;
+      margin: 0 auto 22px;
+      text-align: left;
+    }
+
+    .character-option {
+      position: relative;
+      min-height: 154px;
+      padding: 13px 11px;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      color: var(--text);
+      background: rgba(127, 127, 150, .08);
+      cursor: pointer;
+      transition: transform .2s, border-color .2s, background .2s, box-shadow .2s;
+    }
+
+    .character-option:hover {
+      transform: translateY(-4px);
+      border-color: rgba(52, 231, 228, .55);
+    }
+
+    .character-option.selected {
+      border-color: var(--cyan);
+      background: linear-gradient(145deg, rgba(52,231,228,.13), rgba(139,92,246,.16));
+      box-shadow: 0 0 22px rgba(52, 231, 228, .17), inset 0 0 0 1px rgba(52,231,228,.18);
+    }
+
+    .character-option.selected::after {
+      content: "✓";
+      position: absolute;
+      top: 7px;
+      right: 8px;
+      color: var(--green);
+      font-weight: 950;
+    }
+
+    .character-option .pick-avatar { display: block; margin-bottom: 6px; font-size: 2rem; }
+    .character-option strong { display: block; font-size: .78rem; line-height: 1.2; }
+    .character-option small { display: block; margin-top: 6px; color: var(--muted); font-size: .64rem; line-height: 1.28; }
+    .character-option em { display: block; margin-top: 7px; color: var(--cyan); font-size: .61rem; font-style: normal; font-weight: 900; line-height: 1.25; }
+
+    .cloud-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      min-height: 34px;
+      padding: 7px 11px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      color: var(--muted);
+      background: var(--card);
+      font-size: .76rem;
+      font-weight: 900;
+      white-space: nowrap;
+    }
+
+    .title-cloud-status {
+      position: absolute;
+      top: 18px;
+      right: 18px;
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--yellow);
+      box-shadow: 0 0 10px currentColor;
+    }
+
+    .cloud-status.online .status-dot { background: var(--green); }
+    .cloud-status.offline .status-dot { background: var(--red); }
+
+    .primary-btn, .action-btn, .mini-btn, .shop-btn, .icon-btn {
+      border: 0;
+      cursor: pointer;
+      transition: transform .18s ease, filter .18s ease, box-shadow .18s ease;
+    }
+
+    .primary-btn {
+      padding: 15px 28px;
+      border-radius: 999px;
+      color: #171329;
+      background: linear-gradient(135deg, var(--yellow), #ff9f43);
+      box-shadow: 0 10px 30px rgba(255, 159, 67, .28);
+      font-weight: 900;
+      font-size: 1.05rem;
+    }
+
+    .primary-btn:hover, .action-btn:hover, .mini-btn:hover, .shop-btn:hover, .icon-btn:hover {
+      transform: translateY(-3px) scale(1.02);
+      filter: brightness(1.08);
+    }
+
+    .primary-btn:active, .action-btn:active, .mini-btn:active, .shop-btn:active, .icon-btn:active {
+      transform: scale(.96);
+    }
+
+    /* Main game layout */
+    #gameScreen {
+      max-width: 1480px;
+      margin: auto;
+      padding: 18px clamp(14px, 3vw, 34px) 40px;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 18px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 950;
+      letter-spacing: -.03em;
+    }
+
+    .brand span:first-child { font-size: 1.8rem; }
+
+    .top-actions { display: flex; gap: 8px; }
+
+    .icon-btn {
+      min-width: 44px;
+      height: 44px;
+      padding: 0 13px;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      color: var(--text);
+      background: var(--card);
+      font-weight: 800;
+    }
+
+    .game-grid {
+      display: grid;
+      grid-template-columns: minmax(235px, .78fr) minmax(430px, 1.5fr) minmax(270px, .9fr);
+      gap: 18px;
+      align-items: start;
+    }
+
+    .panel {
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--card);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(16px);
+    }
+
+    .left-column, .center-column, .right-column {
+      display: grid;
+      gap: 18px;
+    }
+
+    .character-card { padding: 24px; text-align: center; }
+
+    .avatar-wrap {
+      position: relative;
+      width: 132px;
+      height: 132px;
+      margin: 0 auto 15px;
+      display: grid;
+      place-items: center;
+      border: 3px solid var(--pink);
+      border-radius: 46% 54% 51% 49%;
+      background: linear-gradient(145deg, rgba(255,79,216,.22), rgba(52,231,228,.16));
+      box-shadow: 0 0 30px rgba(255, 79, 216, .25);
+      animation: blob 7s ease-in-out infinite;
+    }
+
+    #avatar { font-size: 4.8rem; filter: drop-shadow(0 8px 6px rgba(0,0,0,.2)); }
+
+    .mood-tag {
+      display: inline-flex;
+      padding: 6px 11px;
+      border-radius: 999px;
+      color: #171329;
+      background: var(--cyan);
+      font-weight: 900;
+      font-size: .78rem;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+    }
+
+    .character-card h2 { margin: 10px 0 4px; }
+    .character-card p { margin: 0; color: var(--muted); font-size: .9rem; }
+
+    .passive-line {
+      margin-top: 8px !important;
+      padding: 7px 9px;
+      border-radius: 10px;
+      color: var(--cyan) !important;
+      background: rgba(52, 231, 228, .08);
+      font-size: .72rem !important;
+      font-weight: 800;
+    }
+
+    .passive-line.flash { animation: passiveFlash .65s ease; }
+
+    .stats-panel { padding: 20px; }
+
+    .stat { margin-bottom: 18px; }
+    .stat:last-child { margin-bottom: 0; }
+
+    .stat-label {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 7px;
+      font-weight: 800;
+      font-size: .9rem;
+    }
+
+    .bar {
+      height: 13px;
+      overflow: hidden;
+      border-radius: 999px;
+      background: rgba(127, 127, 150, .2);
+      box-shadow: inset 0 2px 4px rgba(0,0,0,.18);
+    }
+
+    .bar-fill {
+      width: 0;
+      height: 100%;
+      border-radius: inherit;
+      transition: width .55s cubic-bezier(.2,.85,.25,1.15);
+      box-shadow: 0 0 16px currentColor;
+    }
+
+    .bar-boredom { color: var(--pink); background: linear-gradient(90deg, #c837ab, var(--pink)); }
+    .bar-energy { color: var(--green); background: linear-gradient(90deg, #20bf6b, var(--green)); }
+    .bar-chaos { color: var(--red); background: linear-gradient(90deg, #ff9f43, var(--red)); }
+    .bar-money { color: var(--yellow); background: linear-gradient(90deg, #f7b731, var(--yellow)); }
+
+    .challenge-card { padding: 20px; }
+    .challenge-card h3, .actions-panel h2, .log-panel h3, .achievement-panel h3 { margin: 0 0 10px; }
+    .challenge-card p { margin: 0 0 14px; color: var(--muted); line-height: 1.45; }
+
+    #dailyQuestList { display: grid; gap: 10px; margin-top: 13px; }
+
+    .quest-item {
+      padding: 10px;
+      border: 1px solid var(--border);
+      border-radius: 13px;
+      background: rgba(127,127,150,.07);
+    }
+
+    .quest-item.complete { border-color: rgba(85, 239, 157, .5); background: rgba(85, 239, 157, .07); }
+    .quest-head { display: flex; justify-content: space-between; gap: 8px; margin-bottom: 6px; font-size: .75rem; font-weight: 900; }
+    .quest-head span:last-child { color: var(--yellow); white-space: nowrap; }
+    .quest-item .bar { height: 8px; }
+    .quest-item p { margin: 6px 0 0; font-size: .66rem; }
+
+    .challenge-progress {
+      display: flex;
+      justify-content: space-between;
+      color: var(--muted);
+      font-size: .82rem;
+      font-weight: 800;
+    }
+
+    .actions-panel { padding: clamp(18px, 4vw, 28px); }
+
+    .section-kicker {
+      color: var(--pink);
+      font-size: .77rem;
+      font-weight: 950;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+    }
+
+    .actions-panel h2 { margin-top: 4px; font-size: clamp(1.5rem, 4vw, 2rem); }
+
+    .action-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 18px;
+    }
+
+    .action-btn {
+      min-height: 106px;
+      padding: 15px;
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      color: var(--text);
+      background: linear-gradient(145deg, rgba(139,92,246,.14), rgba(255,79,216,.08));
+      text-align: left;
+      box-shadow: inset 0 0 0 0 var(--purple);
+    }
+
+    .action-btn:hover {
+      border-color: rgba(52, 231, 228, .5);
+      box-shadow: inset 0 0 30px rgba(52, 231, 228, .08), 0 8px 24px rgba(0,0,0,.16);
+    }
+
+    .action-icon { display: block; margin-bottom: 8px; font-size: 1.8rem; }
+    .action-name { display: block; font-weight: 900; }
+    .action-cost { display: block; margin-top: 4px; color: var(--muted); font-size: .76rem; }
+
+    .mini-panel { padding: 22px; }
+
+    .mini-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+
+    .mini-btn {
+      min-height: 82px;
+      padding: 12px 8px;
+      border-radius: 16px;
+      color: #171329;
+      background: var(--cyan);
+      font-weight: 950;
+      line-height: 1.25;
+    }
+
+    .mini-btn:nth-child(2) { background: var(--yellow); }
+    .mini-btn:nth-child(3) { color: white; background: var(--purple); }
+
+    .log-panel { padding: 20px; }
+
+    #eventLog {
+      height: 290px;
+      overflow-y: auto;
+      padding-right: 6px;
+      scrollbar-color: var(--purple) transparent;
+    }
+
+    .log-entry {
+      margin-bottom: 9px;
+      padding: 10px 11px;
+      border-left: 3px solid var(--cyan);
+      border-radius: 0 10px 10px 0;
+      color: var(--muted);
+      background: rgba(127,127,150,.08);
+      font-size: .86rem;
+      line-height: 1.42;
+      animation: slideIn .3s ease both;
+    }
+
+    .log-entry strong { color: var(--text); }
+    .log-entry.bad { border-color: var(--red); }
+    .log-entry.good { border-color: var(--green); }
+
+    .achievement-panel { padding: 20px; }
+
+    .achievement-summary { color: var(--muted); font-size: .86rem; }
+
+    #achievementList {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 7px;
+      margin-top: 13px;
+    }
+
+    .achievement {
+      aspect-ratio: 1;
+      display: grid;
+      place-items: center;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: rgba(127,127,150,.08);
+      font-size: 1.35rem;
+      filter: grayscale(1);
+      opacity: .35;
+      cursor: help;
+    }
+
+    .achievement.unlocked {
+      border-color: var(--yellow);
+      filter: none;
+      opacity: 1;
+      box-shadow: 0 0 14px rgba(255,209,102,.2);
+    }
+
+    /* Cloud leaderboard */
+    .leaderboard-panel { padding: 20px; }
+
+    .leaderboard-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 13px;
+    }
+
+    .leaderboard-header h3 { margin: 0; }
+
+    .leaderboard-tabs {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 6px;
+      margin-bottom: 12px;
+    }
+
+    .leaderboard-tab {
+      padding: 7px 6px;
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      color: var(--muted);
+      background: rgba(127,127,150,.07);
+      cursor: pointer;
+      font-size: .67rem;
+      font-weight: 900;
+      transition: .18s ease;
+    }
+
+    .leaderboard-tab:hover { color: var(--text); border-color: var(--purple); }
+    .leaderboard-tab.active { color: #171329; border-color: var(--cyan); background: var(--cyan); }
+
+    .refresh-board-btn {
+      padding: 8px 10px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--text);
+      background: rgba(127, 127, 150, .12);
+      cursor: pointer;
+      font-size: .74rem;
+      font-weight: 900;
+    }
+
+    .refresh-board-btn:disabled { cursor: wait; opacity: .55; }
+
+    #leaderboardList { display: grid; gap: 8px; }
+
+    .leaderboard-row {
+      display: grid;
+      grid-template-columns: 30px minmax(0, 1fr) auto;
+      gap: 9px;
+      align-items: center;
+      padding: 10px;
+      border: 1px solid var(--border);
+      border-radius: 13px;
+      background: rgba(127, 127, 150, .07);
+    }
+
+    .leaderboard-rank {
+      color: var(--yellow);
+      font-size: .82rem;
+      font-weight: 950;
+      text-align: center;
+    }
+
+    .leaderboard-name {
+      overflow: hidden;
+      font-size: .88rem;
+      font-weight: 900;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .leaderboard-meta {
+      margin-top: 3px;
+      color: var(--muted);
+      font-size: .68rem;
+    }
+
+    .leaderboard-score {
+      color: var(--cyan);
+      font-size: .92rem;
+      font-weight: 950;
+      text-align: right;
+    }
+
+    .leaderboard-state {
+      padding: 18px 10px;
+      border: 1px dashed var(--border);
+      border-radius: 13px;
+      color: var(--muted);
+      text-align: center;
+      font-size: .82rem;
+      line-height: 1.45;
+    }
+
+    .leaderboard-state.error { color: var(--yellow); }
+
+    /* Shared modal */
+    .modal {
+      position: fixed;
+      inset: 0;
+      z-index: 100;
+      display: grid;
+      place-items: center;
+      padding: 18px;
+      background: rgba(5, 5, 20, .72);
+      backdrop-filter: blur(9px);
+      animation: fadeIn .2s ease;
+    }
+
+    .modal-card {
+      position: relative;
+      width: min(760px, 100%);
+      max-height: min(88vh, 820px);
+      overflow-y: auto;
+      padding: clamp(20px, 5vw, 34px);
+      border: 1px solid var(--border);
+      border-radius: 28px;
+      color: var(--text);
+      background: var(--card-solid);
+      box-shadow: 0 25px 90px rgba(0,0,0,.45), 0 0 50px rgba(139,92,246,.2);
+      animation: popIn .28s cubic-bezier(.2,.9,.25,1.2);
+    }
+
+    .modal-card h2 { margin: 0 45px 8px 0; font-size: clamp(1.6rem, 5vw, 2.25rem); }
+    .modal-card > p { color: var(--muted); }
+
+    .close-btn {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      width: 38px;
+      height: 38px;
+      border: 0;
+      border-radius: 50%;
+      color: var(--text);
+      background: rgba(127,127,150,.18);
+      cursor: pointer;
+      font-size: 1.2rem;
+    }
+
+    /* Shop */
+    .shop-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+      margin-top: 20px;
+    }
+
+    .shop-item {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 12px;
+      padding: 15px;
+      border: 1px solid var(--border);
+      border-radius: 17px;
+      background: rgba(127,127,150,.08);
+    }
+
+    .shop-emoji { font-size: 2rem; }
+    .shop-item h4 { margin: 0 0 4px; }
+    .shop-item p { min-height: 34px; margin: 0 0 10px; color: var(--muted); font-size: .77rem; }
+
+    .shop-btn {
+      padding: 8px 12px;
+      border-radius: 10px;
+      color: #171329;
+      background: var(--yellow);
+      font-size: .8rem;
+      font-weight: 950;
+    }
+
+    .shop-btn:disabled { cursor: not-allowed; filter: grayscale(1); opacity: .45; transform: none; }
+
+    /* Reflex mini-game */
+    .reflex-hud { display: flex; justify-content: space-between; margin: 16px 0 10px; font-weight: 900; }
+
+    #reflexArena {
+      position: relative;
+      height: min(52vh, 380px);
+      overflow: hidden;
+      border: 2px dashed var(--purple);
+      border-radius: 20px;
+      background:
+        linear-gradient(rgba(139,92,246,.08), rgba(52,231,228,.08)),
+        radial-gradient(circle at center, rgba(255,255,255,.05), transparent);
+    }
+
+    #reflexTarget {
+      position: absolute;
+      width: 66px;
+      height: 66px;
+      display: grid;
+      place-items: center;
+      border: 0;
+      border-radius: 50%;
+      color: #171329;
+      background: var(--yellow);
+      box-shadow: 0 0 30px rgba(255,209,102,.55);
+      cursor: pointer;
+      font-size: 1.7rem;
+      animation: pulse .65s ease-in-out infinite alternate;
+    }
+
+    /* Memory mini-game */
+    #memoryDisplay {
+      min-height: 100px;
+      display: grid;
+      place-items: center;
+      margin: 20px 0;
+      border-radius: 18px;
+      background: rgba(139,92,246,.1);
+      font-size: clamp(2rem, 9vw, 4rem);
+      letter-spacing: .18em;
+    }
+
+    .emoji-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+
+    .emoji-btn {
+      min-height: 68px;
+      border: 1px solid var(--border);
+      border-radius: 15px;
+      background: rgba(127,127,150,.1);
+      cursor: pointer;
+      font-size: 2rem;
+      transition: transform .15s, background .15s;
+    }
+
+    .emoji-btn:hover { transform: scale(1.08); background: rgba(52,231,228,.16); }
+
+    /* Dice */
+    .dice-wrap { display: grid; place-items: center; padding: 25px 0; }
+
+    #dice {
+      width: 130px;
+      height: 130px;
+      display: grid;
+      place-items: center;
+      border: 5px solid var(--text);
+      border-radius: 26px;
+      color: var(--text);
+      background: linear-gradient(145deg, var(--purple), var(--pink));
+      box-shadow: 12px 15px 0 rgba(0,0,0,.17), 0 0 35px rgba(255,79,216,.25);
+      font-size: 4.2rem;
+      font-weight: 950;
+    }
+
+    #dice.rolling { animation: diceRoll .7s ease; }
+    #diceResult { min-height: 52px; text-align: center; font-weight: 800; }
+
+    /* Three-round boredom dragon boss */
+    .boss-card { text-align: center; }
+    .boss-avatar { font-size: clamp(4.5rem, 13vw, 7rem); filter: drop-shadow(0 0 24px rgba(255,93,115,.55)); animation: bossHover 1.8s ease-in-out infinite; }
+    .boss-round { color: var(--yellow); font-size: .78rem; font-weight: 950; letter-spacing: .12em; text-transform: uppercase; }
+    .boss-meter { margin: 14px 0 20px; }
+    .boss-meter .bar { height: 14px; }
+    .boss-choices { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+
+    .boss-choice {
+      min-height: 118px;
+      padding: 13px 10px;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      color: var(--text);
+      background: linear-gradient(145deg, rgba(255,93,115,.12), rgba(139,92,246,.12));
+      cursor: pointer;
+      font-weight: 900;
+      transition: transform .18s, border-color .18s, box-shadow .18s;
+    }
+
+    .boss-choice:hover { transform: translateY(-5px) rotate(-1deg); border-color: var(--pink); box-shadow: 0 12px 28px rgba(255,79,216,.16); }
+    .boss-choice span { display: block; margin-bottom: 7px; font-size: 1.8rem; }
+    .boss-choice small { display: block; margin-top: 7px; color: var(--muted); font-size: .67rem; font-weight: 700; line-height: 1.3; }
+
+    /* End screen, toasts, effects */
+    #endScreen {
+      position: fixed;
+      inset: 0;
+      z-index: 200;
+      display: grid;
+      place-items: center;
+      padding: 20px;
+      text-align: center;
+      background: rgba(7, 7, 25, .88);
+      backdrop-filter: blur(14px);
+    }
+
+    .end-card {
+      width: min(560px, 100%);
+      padding: clamp(28px, 7vw, 55px);
+      border: 1px solid var(--border);
+      border-radius: 32px;
+      background: var(--card-solid);
+      box-shadow: var(--shadow);
+      animation: popIn .45s cubic-bezier(.2,.9,.25,1.2);
+    }
+
+    #endEmoji { font-size: 5rem; }
+    #endTitle { margin: 12px 0; font-size: clamp(2rem, 8vw, 3.5rem); }
+    #endMessage { color: var(--muted); line-height: 1.6; }
+
+    .end-score {
+      margin: 14px 0 5px;
+      color: var(--cyan);
+      font-size: 1.25rem;
+      font-weight: 950;
+    }
+
+    .save-status {
+      min-height: 24px;
+      margin: 6px 0 20px;
+      color: var(--muted);
+      font-size: .82rem;
+      font-weight: 800;
+    }
+
+    .save-status.success { color: var(--green); }
+    .save-status.error { color: var(--yellow); }
+
+    .end-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 9px; }
+
+    .challenge-btn {
+      padding: 13px 18px;
+      border: 1px solid var(--cyan);
+      border-radius: 999px;
+      color: var(--cyan);
+      background: rgba(52,231,228,.08);
+      cursor: pointer;
+      font-weight: 900;
+      transition: transform .18s, background .18s;
+    }
+
+    .challenge-btn:hover { transform: translateY(-3px); background: rgba(52,231,228,.16); }
+    #challengeShareStatus { min-height: 20px; margin-top: 10px; color: var(--muted); font-size: .76rem; }
+
+    #toastArea {
+      position: fixed;
+      top: 75px;
+      right: 16px;
+      z-index: 300;
+      display: grid;
+      gap: 9px;
+      pointer-events: none;
+    }
+
+    .toast {
+      max-width: min(330px, calc(100vw - 32px));
+      padding: 12px 16px;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      color: var(--text);
+      background: var(--card-solid);
+      box-shadow: var(--shadow);
+      animation: toastIn .35s ease, toastOut .35s ease 2.7s forwards;
+      font-weight: 800;
+    }
+
+    .sound-text {
+      position: fixed;
+      z-index: 400;
+      pointer-events: none;
+      color: var(--yellow);
+      text-shadow: 3px 3px 0 var(--pink), 0 0 15px var(--yellow);
+      font-size: clamp(2rem, 7vw, 4rem);
+      font-weight: 1000;
+      transform: translate(-50%, -50%) rotate(-8deg);
+      animation: soundPop .8s ease forwards;
+    }
+
+    .confetti {
+      position: fixed;
+      top: -20px;
+      z-index: 250;
+      width: 11px;
+      height: 18px;
+      pointer-events: none;
+      animation: confettiFall linear forwards;
+    }
+
+    .shake { animation: shake .38s ease; }
+
+    @keyframes float { 50% { transform: translateY(-12px) rotate(3deg); } }
+    @keyframes blob { 50% { border-radius: 58% 42% 43% 57%; transform: rotate(2deg); } }
+    @keyframes pulse { to { transform: scale(1.12) rotate(5deg); } }
+    @keyframes fadeIn { from { opacity: 0; } }
+    @keyframes popIn { from { opacity: 0; transform: scale(.84) translateY(25px); } }
+    @keyframes slideIn { from { opacity: 0; transform: translateX(12px); } }
+    @keyframes diceRoll { 25% { transform: rotate(90deg) scale(.8); } 60% { transform: rotate(270deg) scale(1.12); } 100% { transform: rotate(360deg); } }
+    @keyframes bossHover { 50% { transform: translateY(-9px) rotate(3deg) scale(1.03); } }
+    @keyframes passiveFlash { 40% { color: #171329; background: var(--cyan); transform: scale(1.04); } }
+    @keyframes shake { 20% { transform: translateX(-8px) rotate(-.5deg); } 40% { transform: translateX(7px); } 60% { transform: translateX(-5px); } 80% { transform: translateX(3px); } }
+    @keyframes soundPop { 0% { opacity: 0; transform: translate(-50%,-50%) scale(.3) rotate(-15deg); } 45% { opacity: 1; transform: translate(-50%,-80%) scale(1.1) rotate(6deg); } 100% { opacity: 0; transform: translate(-50%,-150%) scale(1.25) rotate(-3deg); } }
+    @keyframes toastIn { from { opacity: 0; transform: translateX(30px); } }
+    @keyframes toastOut { to { opacity: 0; transform: translateX(30px); } }
+    @keyframes confettiFall { to { transform: translate3d(var(--drift), 110vh, 0) rotate(900deg); } }
+
+    @media (max-width: 1050px) {
+      .game-grid { grid-template-columns: 260px minmax(0, 1fr); }
+      .right-column { grid-column: 1 / -1; grid-template-columns: 1.2fr .8fr; }
+      .leaderboard-panel { grid-column: 1 / -1; }
+      #eventLog { height: 210px; }
+    }
+
+    @media (max-width: 720px) {
+      #gameScreen { padding-top: 12px; }
+      .brand span:last-child { display: none; }
+      .game-grid { grid-template-columns: 1fr; }
+      .left-column { grid-template-columns: 1fr; }
+      .right-column { grid-column: auto; grid-template-columns: 1fr; }
+      .leaderboard-panel { grid-column: auto; }
+      .character-card { display: grid; grid-template-columns: 100px 1fr; align-items: center; text-align: left; }
+      .avatar-wrap { width: 86px; height: 86px; margin: 0; }
+      #avatar { font-size: 3.2rem; }
+      .action-grid { grid-template-columns: 1fr; }
+      .action-btn { min-height: 88px; }
+      .mini-grid { grid-template-columns: 1fr; }
+      .mini-btn { min-height: 62px; }
+      .shop-grid { grid-template-columns: 1fr; }
+      .character-picker { grid-template-columns: repeat(2, 1fr); }
+      .character-option { min-height: 138px; }
+      .boss-choices { grid-template-columns: 1fr; }
+      .boss-choice { min-height: 82px; }
+      .modal-card { max-height: 92vh; }
+      .title-cloud-status { position: static; margin-bottom: 16px; }
+      .top-actions .cloud-status { padding-inline: 9px; }
+      .top-actions .cloud-status span:last-child { display: none; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+    }
+  </style>
+</head>
+<body>
+  <!-- Title screen -->
+  <section id="titleScreen" class="screen">
+    <div class="title-card">
+      <div class="cloud-status title-cloud-status" data-connection-status>
+        <span class="status-dot"></span><span data-connection-text>Bağlanıyor...</span>
+      </div>
+      <span class="crown">👑</span>
+      <h1>Can Sıkıntısı<br>Krallığı</h1>
+      <p class="subtitle">Büyülü bir odada mahsursun. Kahve şüpheli, buzdolabı alıngan, goblin ise stajyer. Can sıkıntını sıfırla; kaosu patlatmamaya çalış.</p>
+      <div class="character-picker" aria-label="Karakterini seç">
+        <button class="character-option selected" type="button" data-character="student" aria-pressed="true">
+          <span class="pick-avatar">🧑‍🎓</span><strong>Uykusuz Öğrenci</strong>
+          <small>Üç teslim tarihi ve tek bir çalışan beyin hücresi.</small><em>Pasif: Enerji kaybı azalır.</em>
+        </button>
+        <button class="character-option" type="button" data-character="knight" aria-pressed="false">
+          <span class="pick-avatar">☕</span><strong>Kafein Şövalyesi</strong>
+          <small>Zırhı espresso lekeli, iradesi çift shot.</small><em>Pasif: Kahve daha güçlüdür.</em>
+        </button>
+        <button class="character-option" type="button" data-character="wizard" aria-pressed="false">
+          <span class="pick-avatar">🥿</span><strong>Ev Terliği Büyücüsü</strong>
+          <small>Asası kayıp; sağ terlikle büyü yapıyor.</small><em>Pasif: Olay kaosu azalır.</em>
+        </button>
+        <button class="character-option" type="button" data-character="goblin" aria-pressed="false">
+          <span class="pick-avatar">👺</span><strong>Minik Goblin Stajyeri</strong>
+          <small>Maaş yerine kupon ve alkış kabul ediyor.</small><em>Pasif: Goblinler ekstra kazandırır.</em>
+        </button>
+        <button class="character-option" type="button" data-character="opera" aria-pressed="false">
+          <span class="pick-avatar">🎭</span><strong>Opera PMS Mağduru</strong>
+          <small>Her duygusu üç perde ve yüksek bir do notası.</small><em>Pasif: Kaos, sıkıntıyı eritir.</em>
+        </button>
+      </div>
+      <div class="player-entry">
+        <label for="playerNameInput">Krallıkta adın ne?</label>
+        <input id="playerNameInput" type="text" value="Misafir" maxlength="24" autocomplete="nickname" aria-describedby="playerNameHint">
+        <span id="playerNameHint" class="hidden">En fazla 24 karakter</span>
+      </div>
+      <button id="startBtn" class="primary-btn">Krallığa Gir ✨</button>
+    </div>
+  </section>
+
+  <!-- Main game -->
+  <main id="gameScreen" class="screen hidden">
+    <header class="topbar">
+      <div class="brand"><span>👑</span><span>Can Sıkıntısı Krallığı</span></div>
+      <div class="top-actions">
+        <div class="cloud-status" data-connection-status title="Supabase bağlantısı">
+          <span class="status-dot"></span><span data-connection-text>Bağlanıyor...</span>
+        </div>
+        <button id="themeBtn" class="icon-btn" aria-label="Temayı değiştir" title="Temayı değiştir">☀️</button>
+        <button id="restartBtn" class="icon-btn" title="Yeniden başlat">↻ <span>Yenile</span></button>
+      </div>
+    </header>
+
+    <div class="game-grid">
+      <aside class="left-column">
+        <section class="panel character-card">
+          <div class="avatar-wrap"><span id="avatar">🥱</span></div>
+          <div>
+            <span id="moodTag" class="mood-tag">Aşırı Sıkılmış</span>
+            <h2 id="playerNameDisplay">Misafir</h2>
+            <p id="characterNameDisplay">Uykusuz Öğrenci</p>
+            <p id="characterPassiveText" class="passive-line">Pasif: Enerji kaybın %30 azalır.</p>
+            <p id="moodText">Duvar kağıdıyla göz göze geliyorsun.</p>
+          </div>
+        </section>
+
+        <section class="panel stats-panel" aria-label="Oyuncu istatistikleri">
+          <div class="stat">
+            <div class="stat-label"><span>🥱 Can Sıkıntısı</span><span id="boredomValue">100</span></div>
+            <div class="bar"><div id="boredomBar" class="bar-fill bar-boredom"></div></div>
+          </div>
+          <div class="stat">
+            <div class="stat-label"><span>⚡ Enerji</span><span id="energyValue">50</span></div>
+            <div class="bar"><div id="energyBar" class="bar-fill bar-energy"></div></div>
+          </div>
+          <div class="stat">
+            <div class="stat-label"><span>🔥 Kaos</span><span id="chaosValue">0</span></div>
+            <div class="bar"><div id="chaosBar" class="bar-fill bar-chaos"></div></div>
+          </div>
+          <div class="stat">
+            <div class="stat-label"><span>🪙 Para</span><span id="moneyValue">10</span></div>
+            <div class="bar"><div id="moneyBar" class="bar-fill bar-money"></div></div>
+          </div>
+        </section>
+
+        <section class="panel challenge-card">
+          <span class="section-kicker">Bugünün 3 Garip Görevi</span>
+          <h3>Günlük Macera Listesi</h3>
+          <p>Aynı gün aynı görevler. Her tamamlanan görev final skoruna +250 puan.</p>
+          <div id="dailyQuestList"></div>
+          <div class="challenge-progress"><span id="dailyQuestSummary">0 / 3 tamamlandı</span><span id="dailyQuestBonus">+0 puan</span></div>
+        </section>
+      </aside>
+
+      <section class="center-column">
+        <section class="panel actions-panel">
+          <span class="section-kicker">Büyülü Oda Faaliyetleri</span>
+          <h2>Şimdi hangi kötü fikri deneyelim?</h2>
+          <div class="action-grid">
+            <button class="action-btn" data-action="coffee"><span class="action-icon">☕</span><span class="action-name">Şüpheli Kahve Yap</span><span class="action-cost">Enerji verir. Belki de bilinç kazandırır.</span></button>
+            <button class="action-btn" data-action="fridge"><span class="action-icon">🧊</span><span class="action-name">Buzdolabıyla Tartış</span><span class="action-cost">- enerji, + gurur, muhtemelen kaos</span></button>
+            <button class="action-btn" data-action="website"><span class="action-icon">💻</span><span class="action-name">Gizemli Siteyi Aç</span><span class="action-cost">İnternetin karanlık ve komik köşesi</span></button>
+            <button class="action-btn" data-action="goblin"><span class="action-icon">👺</span><span class="action-name">Minik Goblin Çağır</span><span class="action-cost">Goblinlerin özgeçmişi sorulmaz.</span></button>
+            <button id="shopOpenBtn" class="action-btn"><span class="action-icon">🛒</span><span class="action-name">Gereksiz Eşya Dükkânı</span><span class="action-cost">Paranı anlamlı biçimde anlamsız harca.</span></button>
+            <button class="action-btn" data-action="event"><span class="action-icon">🎡</span><span class="action-name">Rastgele Hayat Çarkı</span><span class="action-cost">30+ absürt sonuç. İade yok.</span></button>
+          </div>
+        </section>
+
+        <section class="panel mini-panel">
+          <div class="mini-grid">
+            <button id="reflexBtn" class="mini-btn">🎯<br>10 Saniye Refleks</button>
+            <button id="memoryBtn" class="mini-btn">🧠<br>Emoji Hafızası</button>
+            <button id="diceBtn" class="mini-btn">🎲<br>Kaos Zarı</button>
+          </div>
+        </section>
+      </section>
+
+      <aside class="right-column">
+        <section class="panel log-panel">
+          <h3>📜 Krallık Günlüğü</h3>
+          <div id="eventLog" aria-live="polite"></div>
+        </section>
+
+        <section class="panel achievement-panel">
+          <h3>🏆 Başarımlar</h3>
+          <div id="achievementSummary" class="achievement-summary">0 / 27 açıldı</div>
+          <div id="achievementList"></div>
+        </section>
+
+        <section class="panel leaderboard-panel">
+          <div class="leaderboard-header">
+            <h3>☁️ Liderlik Tablosu</h3>
+            <button id="refreshLeaderboardBtn" class="refresh-board-btn" type="button">Yenile</button>
+          </div>
+          <div class="leaderboard-tabs" role="tablist" aria-label="Liderlik tablosu filtreleri">
+            <button class="leaderboard-tab active" type="button" data-leaderboard-tab="all" role="tab" aria-selected="true">All Time</button>
+            <button class="leaderboard-tab" type="button" data-leaderboard-tab="today" role="tab" aria-selected="false">Today</button>
+            <button class="leaderboard-tab" type="button" data-leaderboard-tab="fastest" role="tab" aria-selected="false">Fastest Wins</button>
+            <button class="leaderboard-tab" type="button" data-leaderboard-tab="lowestChaos" role="tab" aria-selected="false">Lowest Chaos Wins</button>
+          </div>
+          <div id="leaderboardList" aria-live="polite">
+            <div class="leaderboard-state">Bulut skorları yükleniyor...</div>
+          </div>
+        </section>
+      </aside>
+    </div>
+  </main>
+
+  <!-- Reusable modal -->
+  <div id="modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="modal-card">
+      <button id="closeModalBtn" class="close-btn" aria-label="Kapat">✕</button>
+      <div id="modalContent"></div>
+    </div>
+  </div>
+
+  <!-- Ending overlay -->
+  <div id="endScreen" class="hidden">
+    <div class="end-card">
+      <div id="endEmoji">🎉</div>
+      <h2 id="endTitle">Son</h2>
+      <p id="endMessage"></p>
+      <div id="endScore" class="end-score"></div>
+      <div id="saveStatus" class="save-status" role="status">Skor hazırlanıyor...</div>
+      <div class="end-actions">
+        <button id="playAgainBtn" class="primary-btn">Bir Daha Saçmala ↻</button>
+        <button id="challengeFriendBtn" class="challenge-btn" type="button">Arkadaşıma Meydan Oku</button>
+      </div>
+      <div id="challengeShareStatus" role="status"></div>
+    </div>
+  </div>
+
+  <div id="toastArea" aria-live="polite"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    'use strict';
+
+    /* ------------------------------------------------------------------
+       CAN SIKINTISI KRALLIĞI — all game data and logic live in this file
+       ------------------------------------------------------------------ */
+
+    const $ = (selector) => document.querySelector(selector);
+    const $$ = (selector) => [...document.querySelectorAll(selector)];
+    const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
+    const randomFrom = (array) => array[Math.floor(Math.random() * array.length)];
+
+    /* Only the public anon key is used in the browser. Never use service_role here. */
+    const SUPABASE_URL = 'https://vscjdwbmpgkcqherlmqm.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZzY2pkd2JtcGdrY3FoZXJsbXFtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIwNDk1NDEsImV4cCI6MjA5NzYyNTU0MX0.RzNPOLcHqTqRfGVO5hEDkyk5kduODlcipsxhSUv7BPA';
+    const supabaseClient = typeof supabase === 'undefined'
+      ? null
+      : supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    const INITIAL_STATE = {
+      boredom: 100,
+      energy: 50,
+      chaos: 0,
+      money: 10,
+      playerName: 'Misafir',
+      characterId: 'student',
+      started: false,
+      ended: false,
+      scoreSubmitted: false,
+      result: null,
+      finalScore: 0,
+      challengeCode: '',
+      boss: { triggered: false, active: false, round: 0, power: 0, won: false, scoreBonus: 0 },
+      inventory: [],
+      counters: { actions: 0, coffee: 0, goblins: 0, events: 0, clicks: 0, memoryWins: 0, diceRolls: 0, diceSixes: 0, moneyEarned: 0, purchases: 0, miniSuccess: 0, shares: 0 }
+    };
+
+    let state = freshState();
+    let activeCleanup = null;
+    let dailyQuests = [];
+    let modalLocked = false;
+    let activeLeaderboardTab = 'all';
+
+    const characterDefs = {
+      student: {
+        name: 'Uykusuz Öğrenci', emoji: '🧑‍🎓',
+        description: 'Üç teslim tarihi ve tek bir çalışan beyin hücresi.',
+        passive: 'Enerji kaybın %30 azalır.'
+      },
+      knight: {
+        name: 'Kafein Şövalyesi', emoji: '☕',
+        description: 'Zırhı espresso lekeli, iradesi çift shot.',
+        passive: 'Kahve +5 enerji ve -3 ekstra sıkıntı verir.'
+      },
+      wizard: {
+        name: 'Ev Terliği Büyücüsü', emoji: '🥿',
+        description: 'Asası kayıp; sağ terlikle büyü yapıyor.',
+        passive: 'Rastgele olaylardan gelen kaos 4 azalır.'
+      },
+      goblin: {
+        name: 'Minik Goblin Stajyeri', emoji: '👺',
+        description: 'Maaş yerine kupon ve alkış kabul ediyor.',
+        passive: 'Goblin çağrıları +5 para ve -3 ekstra sıkıntı verir.'
+      },
+      opera: {
+        name: 'Opera PMS Mağduru', emoji: '🎭',
+        description: 'Her duygusu üç perde ve yüksek bir do notası.',
+        passive: 'Kaos arttığında sıkıntın 2 ekstra azalır.'
+      }
+    };
+
+    function freshState() {
+      return JSON.parse(JSON.stringify(INITIAL_STATE));
+    }
+
+    /* Thirty-two absurd random events. Each returns stat changes. */
+    const randomEvents = [
+      { text: 'Tavan “merhaba” dedi. Nezaketen cevap verdin.', delta: { boredom: -7, chaos: 5 } },
+      { text: 'Kaybolan çorabın belediye başkanı seçildi.', delta: { boredom: -10, money: 3 } },
+      { text: 'Bir güvercin sana vergi borcu çıkardı.', delta: { money: -4, chaos: 7 } },
+      { text: 'Wi-Fi şifren kendi kendine “patates123” oldu.', delta: { boredom: -6, chaos: 4 } },
+      { text: 'Aynadaki sen göz kırpmayı unuttu. Garip.', delta: { boredom: -9, energy: -3, chaos: 9 } },
+      { text: 'Koltuğun arasından 8 lira ve bir kehanet çıktı.', delta: { money: 8, chaos: 2 } },
+      { text: 'Komşunun kedisi telepatik olarak seni yargıladı.', delta: { boredom: -5, energy: -2 } },
+      { text: 'Kapı zili çaldı; kapıda yalnızca dramatik bir rüzgâr vardı.', delta: { boredom: -8, chaos: 6 } },
+      { text: 'Makarna tanrıları sosunu kutsadı.', delta: { energy: 9, boredom: -4 } },
+      { text: 'Telefonun %101 şarj oldu ve kibirlendi.', delta: { energy: 6, chaos: 5 } },
+      { text: 'Bir uzaylı yanlış numarayı arayıp özür diledi.', delta: { boredom: -12, money: 2 } },
+      { text: 'Halı üç saniyeliğine uçtu. Garanti kapsamı dışında.', delta: { boredom: -11, chaos: 8 } },
+      { text: 'Çay kaşığın sana motivasyon konuşması yaptı.', delta: { energy: 8, boredom: -5 } },
+      { text: 'Duvar saati zamanı geri aldı ama yalnızca 14 saniye.', delta: { boredom: -3, chaos: 6 } },
+      { text: 'Buzdolabında “beni unut” yazan bir puding buldun.', delta: { energy: 4, chaos: 10 } },
+      { text: 'Görünmez bir orkestra giriş müziğini çaldı.', delta: { boredom: -9, energy: 5 } },
+      { text: 'Bir bulut odana girip halıya yağmur yağdırdı.', delta: { boredom: -7, chaos: 12 } },
+      { text: 'Cebinden hiç gitmediğin bir ülkenin parası çıktı.', delta: { money: 6, boredom: -3 } },
+      { text: 'Kahve fincanın sendika kurdu; mola istiyor.', delta: { energy: -4, chaos: 5 } },
+      { text: 'Saksıdaki bitki sınavdan 92 aldığını açıkladı.', delta: { boredom: -6, money: 2 } },
+      { text: 'Yer çekimi bir anlığına hafta sonuna çıktı.', delta: { boredom: -13, chaos: 13 } },
+      { text: 'Eski bir tost sana “asla vazgeçme” dedi.', delta: { energy: 10, chaos: 3 } },
+      { text: 'Bir kargo geldi: içinde daha küçük bir kargo vardı.', delta: { boredom: -8, money: -2 } },
+      { text: 'Ayakkabıların tango yarışmasına katıldı.', delta: { boredom: -10, energy: -4 } },
+      { text: 'Uzaktan bir “BLOOP” duyuldu. Kimse sorumluluk almadı.', delta: { boredom: -4, chaos: 8 } },
+      { text: 'Odanın köşesinde düşük bütçeli bir portal açıldı.', delta: { boredom: -12, chaos: 15 } },
+      { text: 'Bir ördek avukatın olarak hizmet teklif etti.', delta: { money: -3, boredom: -9 } },
+      { text: 'Kumanda seni bulamadığı için panikledi.', delta: { boredom: -5, energy: -2 } },
+      { text: 'Gelecekten gelen sen “ekmek al” deyip kayboldu.', delta: { money: -2, chaos: 7 } },
+      { text: 'Perden Oscar kazanmış gibi selam verdi.', delta: { boredom: -7, chaos: 3 } },
+      { text: 'Bir dakika boyunca her şey çizgi film sesi çıkardı.', delta: { boredom: -14, energy: 3 } },
+      { text: 'Kraliyet hazinesi muhasebe hatası yaptı. Bu kez lehine.', delta: { money: 12, chaos: 4 } }
+    ];
+
+    const shopItems = [
+      { id: 'hat', emoji: '🎩', name: 'Görünmez Şapka', price: 9, desc: 'Kimse görmez ama sen çok havalı hissedersin.', delta: { boredom: -8, chaos: 2 } },
+      { id: 'potato', emoji: '🥔', name: 'Duygusal Destek Patatesi', price: 7, desc: 'Sessizce dinler. Kesinlikle yargılamaz.', delta: { boredom: -6, energy: 8 } },
+      { id: 'spray', emoji: '🧴', name: 'Can Sıkıntısı Spreyi', price: 15, desc: 'İçindekiler: nane, neon ve şüphe.', delta: { boredom: -18, chaos: 5 } },
+      { id: 'coupon', emoji: '🎟️', name: 'Goblin Kuponu', price: 8, desc: 'Sonraki goblin çağrısına ekstra güç katar.', delta: { boredom: -3 } },
+      { id: 'thunder', emoji: '⚡', name: 'Cep Yıldırımı', price: 13, desc: 'Cepte taşınmaması gereken ilk şey.', delta: { boredom: -12, energy: 12, chaos: 12 } },
+      { id: 'usb', emoji: '💾', name: 'Şüpheli USB', price: 11, desc: 'Etiketinde yalnızca “AÇMA” yazıyor.', delta: { money: 9, boredom: -7, chaos: 14 } },
+      { id: 'spoon', emoji: '🥄', name: 'Özgüvenin Altın Kaşığı', price: 18, desc: 'Çorba içince alkışlıyor.', delta: { energy: 15, boredom: -10 } },
+      { id: 'disco', emoji: '🪩', name: 'Minik Disko Topu', price: 12, desc: 'Her odayı üç kişilik gece kulübü yapar.', delta: { boredom: -15, energy: -5, chaos: 7 } }
+    ];
+
+    const achievementDefs = [
+      { id: 'first', icon: '👆', name: 'Bir Şey Yaptım!', desc: 'İlk eylemini gerçekleştir.', test: () => state.counters.actions >= 1 },
+      { id: 'lessBored', icon: '😏', name: 'Hafif Eğlence', desc: 'Can sıkıntısını 75 altına indir.', test: () => state.boredom <= 75 },
+      { id: 'chaotic', icon: '🔥', name: 'Burada Sorun Yok', desc: 'Kaosu 50 seviyesine çıkar.', test: () => state.chaos >= 50 },
+      { id: 'rich', icon: '💰', name: 'Ev Ekonomisti', desc: '30 para biriktir.', test: () => state.money >= 30 },
+      { id: 'collector', icon: '🛍️', name: 'Gereksiz Koleksiyoncu', desc: '3 eşya satın al.', test: () => state.inventory.length >= 3 },
+      { id: 'goblin', icon: '👺', name: 'Goblin Patronu', desc: 'Bir goblin çağır.', test: () => state.counters.goblins >= 1 },
+      { id: 'reflex', icon: '🎯', name: 'Parmak Ninja', desc: 'Refleks oyununda toplam 10 hedef vur.', test: () => state.counters.clicks >= 10 },
+      { id: 'memory', icon: '🧠', name: 'Fil Hafızası', desc: 'Hafıza oyununu kazan.', test: () => state.counters.memoryWins >= 1 },
+      { id: 'six', icon: '🎲', name: 'Zarın Seçilmişi', desc: 'Kaos zarında 6 at.', test: () => state.counters.diceSixes >= 1 },
+      { id: 'events', icon: '🎡', name: 'Hayat Bana Güzel', desc: '10 rastgele olay yaşa.', test: () => state.counters.events >= 10 },
+      { id: 'barista', icon: '☕', name: 'Şüpheli Barista', desc: '5 şüpheli kahve yap.', test: () => state.counters.coffee >= 5 },
+      { id: 'winner', icon: '👑', name: 'Sıkıntı Fatihi', desc: 'Oyunu kazan.', test: () => state.result === 'win' },
+      { id: 'loaded', icon: '🤑', name: 'Goblin Milyoneri', desc: '50 para biriktir.', test: () => state.money >= 50 },
+      { id: 'shopTwo', icon: '🧾', name: 'Fiş Nerede?', desc: '2 eşya satın al.', test: () => state.counters.purchases >= 2 },
+      { id: 'shopAll', icon: '🏬', name: 'Dükkânı Kapat', desc: 'Tüm mağaza eşyalarını satın al.', test: () => state.inventory.length >= shopItems.length },
+      { id: 'miniThree', icon: '🕹️', name: 'Mini Oyun Makinesi', desc: '3 mini oyunu başarıyla tamamla.', test: () => state.counters.miniSuccess >= 3 },
+      { id: 'dragon', icon: '🐉', name: 'Sıkıntı Avcısı', desc: 'Büyük Can Sıkıntısı Ejderi’ni yen.', test: () => state.boss.won },
+      { id: 'questOne', icon: '📌', name: 'Liste İnsanı', desc: 'Bir günlük görevi tamamla.', test: () => dailyQuests.some((quest) => quest.completed) },
+      { id: 'questAll', icon: '📋', name: 'Bugün Çok Verimliyim', desc: 'Üç günlük görevi de tamamla.', test: () => dailyQuests.length === 3 && dailyQuests.every((quest) => quest.completed) },
+      { id: 'speed', icon: '🏎️', name: 'Sıkıntı Speedrun', desc: '15 tur veya altında kazan.', test: () => state.result === 'win' && state.counters.actions <= 15 },
+      { id: 'zenWin', icon: '🧘', name: 'Zen Ama Eğlenceli', desc: '25 kaosun altında kazan.', test: () => state.result === 'win' && state.chaos < 25 },
+      { id: 'closeCall', icon: '🪫', name: 'Son Yüzde Bir', desc: '10 veya daha az enerjiyle kazan.', test: () => state.result === 'win' && state.energy <= 10 },
+      { id: 'event20', icon: '🌪️', name: 'Hayat Deneyimi', desc: '20 rastgele olay yaşa.', test: () => state.counters.events >= 20 },
+      { id: 'click25', icon: '⚡', name: 'Tıkır Tıkır', desc: 'Toplam 25 refleks hedefi vur.', test: () => state.counters.clicks >= 25 },
+      { id: 'memoryTwo', icon: '🐘', name: 'İki Filli Hafıza', desc: 'Hafıza oyununu 2 kez kazan.', test: () => state.counters.memoryWins >= 2 },
+      { id: 'diceTen', icon: '🎰', name: 'Zar Bağımlısı Değilim', desc: 'Kaos zarını 10 kez at.', test: () => state.counters.diceRolls >= 10 },
+      { id: 'chaosWin', icon: '🌋', name: 'Yangından Mal Kaçırır Gibi', desc: '80 veya üzeri kaosla kazan.', test: () => state.result === 'win' && state.chaos >= 80 }
+    ];
+
+    const dailyQuestDefs = [
+      { id: 'lowChaosWin', title: 'Sessiz Zafer', desc: '50 kaosun altında kazan.', goal: 1, endOnly: true, progress: () => state.result === 'win' && state.chaos < 50 ? 1 : 0 },
+      { id: 'coffee3', title: 'Kafein Üçlemesi', desc: '3 kez şüpheli kahve yap.', goal: 3, progress: () => state.counters.coffee },
+      { id: 'shop2', title: 'Gereksiz Alışveriş', desc: 'Mağazadan 2 eşya satın al.', goal: 2, progress: () => state.counters.purchases },
+      { id: 'money50', title: 'Kraliyet Kasası', desc: 'Oyunu en az 50 parayla bitir.', goal: 50, endOnly: true, progress: () => state.result ? state.money : 0 },
+      { id: 'mini1', title: 'Minik Ama Başarılı', desc: 'Bir mini oyunu başarıyla tamamla.', goal: 1, progress: () => state.counters.miniSuccess },
+      { id: 'events4', title: 'Kader Turisti', desc: 'Hayat çarkını 4 kez döndür.', goal: 4, progress: () => state.counters.events },
+      { id: 'click10', title: 'Neon Parmak', desc: 'Toplam 10 refleks hedefi vur.', goal: 10, progress: () => state.counters.clicks },
+      { id: 'dice3', title: 'Zar Diplomasisi', desc: 'Kaos zarını 3 kez yuvarla.', goal: 3, progress: () => state.counters.diceRolls },
+      { id: 'bossWin', title: 'Ejderha Mesaisi', desc: 'Büyük Can Sıkıntısı Ejderi’ni yen.', goal: 1, progress: () => state.boss.won ? 1 : 0 }
+    ];
+
+    const endings = {
+      bossWin: [
+        'Büyük Can Sıkıntısı Ejderi diz çöktü! Krallık gökyüzüne adını neon harflerle yazdı.',
+        'Ejderha yenildi, sıkıntı buharlaştı ve goblin orkestrası zafer marşını yanlış notadan çaldı.'
+      ],
+      win: [
+        'Can sıkıntısını yendin. Oda seni yeni eğlence bakanı ilan etti.',
+        'Sıkıntı sıfırlandı! Goblinler adına ulusal bayram ilan edildi.'
+      ],
+      chaos: [
+        'Kaos tavana vurdu. Tavan da karşılık verdi. Krallık geçici olarak köpüğe dönüştü.',
+        'Gerçeklik “ben bu vardiyayı almıyorum” deyip çıktı. Muhteşem bir felaket.'
+      ],
+      sleep: [
+        'Enerjin bitti. Halının üstünde uyuyakaldın; duvar seni battaniyeyle örttü.',
+        'Derin bir uykuya daldın. Rüyanda buzdolabıyla tartışmayı kazandın.',
+        'Uyku krallığı seni vatandaşlığa kabul etti. Horlama marşın oldu.'
+      ]
+    };
+
+    /* Persistent achievements and theme. */
+    let unlocked = loadJSON('csk-achievements', []);
+    const savedTheme = localStorage.getItem('csk-theme') || 'dark';
+    document.body.classList.toggle('light', savedTheme === 'light');
+
+    function loadJSON(key, fallback) {
+      try { return JSON.parse(localStorage.getItem(key)) || fallback; }
+      catch { return fallback; }
+    }
+
+    /* Names are length-limited and always rendered with textContent. */
+    function normalizePlayerName(value) {
+      const cleaned = String(value || '')
+        .replace(/[<>&"'`]/g, '')
+        .replace(/[\u0000-\u001f\u007f]/g, '')
+        .replace(/\s+/g, ' ')
+        .trim()
+        .slice(0, 24);
+      return cleaned || 'Misafir';
+    }
+
+    function selectCharacter(characterId) {
+      const safeId = characterDefs[characterId] ? characterId : 'student';
+      state.characterId = safeId;
+      $$('.character-option').forEach((button) => {
+        const selected = button.dataset.character === safeId;
+        button.classList.toggle('selected', selected);
+        button.setAttribute('aria-pressed', String(selected));
+      });
+      updateCharacterDisplay();
+    }
+
+    function updateCharacterDisplay() {
+      const character = characterDefs[state.characterId] || characterDefs.student;
+      $('#avatar').textContent = character.emoji;
+      $('#characterNameDisplay').textContent = character.name;
+      $('#characterPassiveText').textContent = `Pasif: ${character.passive}`;
+    }
+
+    function flashPassive(message) {
+      const element = $('#characterPassiveText');
+      element.textContent = `✨ ${message}`;
+      element.classList.remove('flash');
+      void element.offsetWidth;
+      element.classList.add('flash');
+      setTimeout(updateCharacterDisplay, 1100);
+    }
+
+    function init() {
+      $('#themeBtn').textContent = document.body.classList.contains('light') ? '🌙' : '☀️';
+      $('#playerNameInput').value = normalizePlayerName(localStorage.getItem('csk-player-name') || 'Misafir');
+      selectCharacter(localStorage.getItem('csk-character') || 'student');
+      createDailyQuests();
+      renderAchievements();
+      bindEvents();
+      updateUI();
+      testSupabaseConnection();
+    }
+
+    function bindEvents() {
+      $('#startBtn').addEventListener('click', startGame);
+      $('#restartBtn').addEventListener('click', restartGame);
+      $('#playAgainBtn').addEventListener('click', restartGame);
+      $('#challengeFriendBtn').addEventListener('click', copyChallengeMessage);
+      $('#themeBtn').addEventListener('click', toggleTheme);
+      $('#shopOpenBtn').addEventListener('click', openShop);
+      $('#reflexBtn').addEventListener('click', startReflexGame);
+      $('#memoryBtn').addEventListener('click', startMemoryGame);
+      $('#diceBtn').addEventListener('click', openDiceGame);
+      $('#refreshLeaderboardBtn').addEventListener('click', loadLeaderboard);
+      $$('.leaderboard-tab').forEach((button) => button.addEventListener('click', () => selectLeaderboardTab(button.dataset.leaderboardTab)));
+      $$('.character-option').forEach((button) => button.addEventListener('click', () => selectCharacter(button.dataset.character)));
+      $('#closeModalBtn').addEventListener('click', () => closeModal());
+      $('#modal').addEventListener('click', (event) => { if (event.target === $('#modal')) closeModal(); });
+      document.addEventListener('keydown', (event) => { if (event.key === 'Escape') closeModal(); });
+      $('#playerNameInput').addEventListener('keydown', (event) => { if (event.key === 'Enter') startGame(); });
+      $$('.action-btn[data-action]').forEach((button) => button.addEventListener('click', () => performAction(button.dataset.action)));
+    }
+
+    function startGame() {
+      state.playerName = normalizePlayerName($('#playerNameInput').value);
+      $('#playerNameInput').value = state.playerName;
+      $('#playerNameDisplay').textContent = state.playerName;
+      localStorage.setItem('csk-player-name', state.playerName);
+      localStorage.setItem('csk-character', state.characterId);
+      state.started = true;
+      $('#titleScreen').classList.add('hidden');
+      $('#gameScreen').classList.remove('hidden');
+      addLog(`<strong>${characterDefs[state.characterId].name} göreve hazır!</strong> Buzdolabı uzaktan ters ters bakıyor.`, 'good');
+      soundText('GLORP!');
+      updateUI();
+    }
+
+    function restartGame() {
+      closeModal(true);
+      const currentPlayerName = normalizePlayerName(state.playerName || $('#playerNameInput').value);
+      const currentCharacterId = characterDefs[state.characterId] ? state.characterId : 'student';
+      state = freshState();
+      state.playerName = currentPlayerName;
+      state.characterId = currentCharacterId;
+      state.started = true;
+      $('#playerNameDisplay').textContent = state.playerName;
+      $('#titleScreen').classList.add('hidden');
+      $('#gameScreen').classList.remove('hidden');
+      $('#endScreen').classList.add('hidden');
+      $('#saveStatus').className = 'save-status';
+      $('#saveStatus').textContent = 'Skor hazırlanıyor...';
+      $('#challengeShareStatus').textContent = '';
+      $('#eventLog').innerHTML = '';
+      createDailyQuests();
+      addLog('<strong>Evren yeniden başlatıldı.</strong> Goblin önbelleği temizlendi.', 'good');
+      updateUI();
+    }
+
+    /* ------------------------- Supabase integration ------------------------- */
+
+    function setConnectionStatus(mode) {
+      const labels = { connecting: 'Bağlanıyor...', online: 'Online', offline: 'Offline' };
+      $$('[data-connection-status]').forEach((badge) => {
+        badge.classList.toggle('online', mode === 'online');
+        badge.classList.toggle('offline', mode === 'offline');
+        const label = badge.querySelector('[data-connection-text]');
+        if (label) label.textContent = labels[mode] || labels.offline;
+      });
+    }
+
+    function setLeaderboardMessage(message, isError = false) {
+      const list = $('#leaderboardList');
+      const status = document.createElement('div');
+      status.className = `leaderboard-state${isError ? ' error' : ''}`;
+      status.textContent = message;
+      list.replaceChildren(status);
+    }
+
+    /* Page-load connection test: intentionally requests only one row. */
+    async function testSupabaseConnection() {
+      setConnectionStatus('connecting');
+      try {
+        if (!supabaseClient) throw new Error('Supabase CDN yüklenemedi.');
+        const { error } = await supabaseClient
+          .from('game_scores')
+          .select('id')
+          .limit(1);
+        if (error) throw error;
+        setConnectionStatus('online');
+        await loadLeaderboard();
+      } catch (error) {
+        console.warn('Supabase bağlantı testi başarısız:', error);
+        setConnectionStatus('offline');
+        setLeaderboardMessage('Bulut skor defteri şu an uyuyor.', true);
+      }
+    }
+
+    function selectLeaderboardTab(tab) {
+      const validTabs = ['all', 'today', 'fastest', 'lowestChaos'];
+      activeLeaderboardTab = validTabs.includes(tab) ? tab : 'all';
+      $$('.leaderboard-tab').forEach((button) => {
+        const active = button.dataset.leaderboardTab === activeLeaderboardTab;
+        button.classList.toggle('active', active);
+        button.setAttribute('aria-selected', String(active));
+      });
+      loadLeaderboard();
+    }
+
+    /* Fetch and safely render the selected top-ten cloud board. */
+    async function loadLeaderboard() {
+      const refreshButton = $('#refreshLeaderboardBtn');
+      refreshButton.disabled = true;
+      setLeaderboardMessage('Bulut skorları yükleniyor...');
+      try {
+        if (!supabaseClient) throw new Error('Supabase CDN yüklenemedi.');
+        let query = supabaseClient
+          .from('game_scores')
+          .select('player_name, final_score, result, turns, chaos, created_at');
+
+        if (activeLeaderboardTab === 'today') {
+          const start = new Date();
+          start.setHours(0, 0, 0, 0);
+          const end = new Date(start);
+          end.setDate(end.getDate() + 1);
+          query = query
+            .gte('created_at', start.toISOString())
+            .lt('created_at', end.toISOString())
+            .order('final_score', { ascending: false })
+            .order('created_at', { ascending: true });
+        } else if (activeLeaderboardTab === 'fastest') {
+          query = query
+            .eq('result', 'win')
+            .order('turns', { ascending: true })
+            .order('final_score', { ascending: false });
+        } else if (activeLeaderboardTab === 'lowestChaos') {
+          query = query
+            .eq('result', 'win')
+            .order('chaos', { ascending: true })
+            .order('final_score', { ascending: false });
+        } else {
+          query = query
+            .order('final_score', { ascending: false })
+            .order('created_at', { ascending: true });
+        }
+
+        const { data, error } = await query.limit(10);
+        if (error) throw error;
+        renderLeaderboard(Array.isArray(data) ? data : []);
+        setConnectionStatus('online');
+      } catch (error) {
+        console.warn('Liderlik tablosu alınamadı:', error);
+        setConnectionStatus('offline');
+        setLeaderboardMessage('Bulut skor defteri şu an uyuyor.', true);
+      } finally {
+        refreshButton.disabled = false;
+      }
+    }
+
+    function renderLeaderboard(rows) {
+      const list = $('#leaderboardList');
+      if (!rows.length) {
+        setLeaderboardMessage('Henüz skor yok. İlk efsane sen ol!');
+        return;
+      }
+
+      const resultLabels = { win: 'Kazandı', chaos: 'Kaos', sleep: 'Uyudu' };
+      const fragment = document.createDocumentFragment();
+      rows.forEach((row, index) => {
+        const item = document.createElement('article');
+        item.className = 'leaderboard-row';
+
+        const rank = document.createElement('div');
+        rank.className = 'leaderboard-rank';
+        rank.textContent = index < 3 ? ['🥇', '🥈', '🥉'][index] : `#${index + 1}`;
+
+        const details = document.createElement('div');
+        const name = document.createElement('div');
+        name.className = 'leaderboard-name';
+        name.textContent = normalizePlayerName(row.player_name);
+        name.title = name.textContent;
+        const meta = document.createElement('div');
+        meta.className = 'leaderboard-meta';
+        const date = new Date(row.created_at);
+        const dateText = Number.isNaN(date.getTime())
+          ? 'Tarih bilinmiyor'
+          : new Intl.DateTimeFormat('tr-TR', { day: '2-digit', month: 'short', year: 'numeric' }).format(date);
+        const safeResult = resultLabels[row.result] || String(row.result || 'Bilinmiyor').slice(0, 20);
+        const turns = Number.isFinite(Number(row.turns)) ? Math.max(0, Math.round(Number(row.turns))) : 0;
+        const chaos = Number.isFinite(Number(row.chaos)) ? clamp(Math.round(Number(row.chaos)), 0, 100) : 0;
+        meta.textContent = `${safeResult} · ${turns} tur · ${chaos} kaos · ${dateText}`;
+        details.append(name, meta);
+
+        const score = document.createElement('div');
+        score.className = 'leaderboard-score';
+        const numericScore = Number.isFinite(Number(row.final_score)) ? Math.round(Number(row.final_score)) : 0;
+        score.textContent = `${numericScore} puan`;
+
+        item.append(rank, details, score);
+        fragment.appendChild(item);
+      });
+      list.replaceChildren(fragment);
+    }
+
+    function calculateBonusScore() {
+      const completedQuests = Array.isArray(dailyQuests)
+        ? dailyQuests.filter((quest) => quest && quest.completed).length
+        : 0;
+      const bossBonus = Number(state.boss && state.boss.scoreBonus);
+      return (completedQuests * 250) + (Number.isFinite(bossBonus) ? Math.max(0, Math.round(bossBonus)) : 0);
+    }
+
+    function generateChallengeCode(finalScore) {
+      if (state.challengeCode) return state.challengeCode;
+      const safeScore = Number.isFinite(Number(finalScore)) ? Math.round(Number(finalScore)) : 0;
+      const source = `${normalizePlayerName(state.playerName)}|${safeScore}|${state.counters && state.counters.actions || 0}|${Date.now()}`;
+      let hash = 2166136261;
+      for (const character of source) {
+        hash ^= character.charCodeAt(0);
+        hash = Math.imul(hash, 16777619);
+      }
+      state.challengeCode = `CSK-${(hash >>> 0).toString(36).toUpperCase().padStart(7, '0').slice(-7)}`;
+      return state.challengeCode;
+    }
+
+    function calculateFinalScore(type) {
+      const resultBonus = { win: 1500, sleep: 250, chaos: 0 }[type] || 0;
+      const progressPoints = (100 - state.boredom) * 12;
+      const survivalPoints = state.energy * 3 + state.money * 10;
+      const achievementPoints = unlocked.filter((id) => achievementDefs.some((item) => item.id === id)).length * 60;
+      const bonusPoints = calculateBonusScore();
+      const penalties = state.chaos * 4 + state.counters.actions * 2;
+      return Math.max(0, Math.round(resultBonus + progressPoints + survivalPoints + achievementPoints + bonusPoints - penalties));
+    }
+
+    function setSaveStatus(message, kind = '') {
+      const status = $('#saveStatus');
+      status.className = `save-status${kind ? ` ${kind}` : ''}`;
+      status.textContent = message;
+    }
+
+    async function saveFinalScore(type, finalScore) {
+      if (state.scoreSubmitted) return;
+      state.scoreSubmitted = true;
+      setSaveStatus('Skor buluta gönderiliyor...');
+
+      /* Take a snapshot before awaiting so a restart cannot alter this row. */
+      const character = characterDefs[state.characterId] || null;
+      const completedDailyQuests = Array.isArray(dailyQuests)
+        ? dailyQuests.filter((quest) => quest && quest.completed).length
+        : 0;
+      const safeFinalScore = Number.isFinite(Number(finalScore)) ? Math.round(Number(finalScore)) : 0;
+      const scoreRow = {
+        player_name: normalizePlayerName(state.playerName),
+        final_score: safeFinalScore,
+        result: type,
+        boredom: Math.round(state.boredom),
+        energy: Math.round(state.energy),
+        chaos: Math.round(state.chaos),
+        money: Math.round(state.money),
+        turns: Math.round(state.counters.actions),
+        achievements: unlocked.filter((id) => achievementDefs.some((item) => item.id === id)),
+        character_name: character && character.name ? character.name : 'Bilinmeyen Kahraman',
+        boss_defeated: Boolean(state.boss && state.boss.won),
+        daily_quests_completed: completedDailyQuests,
+        challenge_code: generateChallengeCode(safeFinalScore),
+        bonus_score: calculateBonusScore()
+      };
+
+      try {
+        if (!supabaseClient) throw new Error('Supabase CDN yüklenemedi.');
+        const { error } = await supabaseClient
+          .from('game_scores')
+          .insert(scoreRow);
+        if (error) throw error;
+        setSaveStatus('Skor kaydedildi', 'success');
+        setConnectionStatus('online');
+        await loadLeaderboard();
+      } catch (error) {
+        console.warn('Skor kaydedilemedi:', error);
+        setSaveStatus('Skor kaydedilemedi ama oyun bozulmadı', 'error');
+        if (!navigator.onLine || /fetch|network|cdn/i.test(String(error && error.message))) {
+          setConnectionStatus('offline');
+        }
+      }
+    }
+
+    function toggleTheme() {
+      document.body.classList.toggle('light');
+      const isLight = document.body.classList.contains('light');
+      $('#themeBtn').textContent = isLight ? '🌙' : '☀️';
+      localStorage.setItem('csk-theme', isLight ? 'light' : 'dark');
+      soundText(isLight ? 'PING!' : 'POOF!');
+    }
+
+    /* Core action dispatcher. */
+    function performAction(type) {
+      if (state.ended) return;
+      state.counters.actions++;
+      let message = '';
+      let delta = {};
+      let tone = '';
+
+      if (type === 'coffee') {
+        state.counters.coffee++;
+        const coffeeResults = [
+          { message: 'Kahve mor bir duman çıkardı. Tadı pazartesi gibi.', delta: { energy: 15, boredom: -7, chaos: 7 } },
+          { message: 'Kahve sana geleceği gösterdi: Beş dakika sonra yine kahve içiyorsun.', delta: { energy: 10, boredom: -5, chaos: 3 } },
+          { message: 'Fincan “ben çorbayım” diye bağırdı.', delta: { energy: 7, boredom: -10, chaos: 8 } }
+        ];
+        ({ message, delta } = randomFrom(coffeeResults));
+        soundText('BLOOP!');
+      } else if (type === 'fridge') {
+        const fridgeResults = [
+          { message: 'Buzdolabı mantıklı argümanlarla seni susturdu.', delta: { energy: -8, boredom: -9, chaos: 6 } },
+          { message: '“Sen sadece soğuk bir dolapsın!” dedin. Çok alındı.', delta: { energy: -6, boredom: -7, chaos: 10 } },
+          { message: 'Tartışma berabere bitti. Peyniri arabulucu seçtiniz.', delta: { energy: -4, boredom: -8, money: 2 } }
+        ];
+        ({ message, delta } = randomFrom(fridgeResults));
+        soundText('BRRR!');
+      } else if (type === 'website') {
+        const webResults = [
+          { message: 'Site yalnızca dans eden bir salatalıktı. 11/10 içerik.', delta: { boredom: -11, energy: -2 } },
+          { message: '“Yakınındaki goblinler” reklamına yanlışlıkla tıkladın.', delta: { boredom: -7, chaos: 9, money: -2 } },
+          { message: 'İnternet sana ücretsiz bir dijital taş verdi.', delta: { boredom: -6, money: 4, chaos: 3 } }
+        ];
+        ({ message, delta } = randomFrom(webResults));
+        soundText('ZAP!');
+      } else if (type === 'goblin') {
+        state.counters.goblins++;
+        const boosted = state.inventory.includes('coupon');
+        message = boosted ? 'Kuponlu goblin takım elbiseyle geldi ve evi stand-up sahnesine çevirdi.' : 'Minik goblin geldi, bir bisküvi yedi ve vergi danışmanlığı yaptı.';
+        delta = boosted ? { boredom: -18, money: 8, chaos: 7 } : { boredom: -10, money: 3, chaos: 9 };
+        soundText('GLORP!');
+      } else if (type === 'event') {
+        triggerRandomEvent();
+        return;
+      }
+
+      if ((delta.chaos || 0) >= 9) tone = 'bad';
+      if ((delta.boredom || 0) <= -10) tone = 'good';
+      addLog(message, tone);
+      changeStats(delta, type);
+    }
+
+    function triggerRandomEvent() {
+      state.counters.events++;
+      const event = randomFrom(randomEvents);
+      addLog(`<strong>Çark:</strong> ${event.text}`, (event.delta.chaos || 0) > 9 ? 'bad' : '');
+      soundText(randomFrom(['VİYUV!', 'PLOP!', 'ZONK!', 'FİŞŞT!', 'KRAK!']));
+      changeStats(event.delta, 'event');
+    }
+
+    function applyCharacterPassive(delta, source) {
+      const adjusted = { ...delta };
+      let passiveMessage = '';
+      if (state.characterId === 'student' && (adjusted.energy || 0) < 0) {
+        adjusted.energy = Math.round(adjusted.energy * .7);
+        passiveMessage = 'Uykusuz azmi enerji kaybını azalttı!';
+      } else if (state.characterId === 'knight' && source === 'coffee') {
+        adjusted.energy = (adjusted.energy || 0) + 5;
+        adjusted.boredom = (adjusted.boredom || 0) - 3;
+        passiveMessage = 'Kafein zırhı çift shot parladı!';
+      } else if (state.characterId === 'wizard' && source === 'event' && (adjusted.chaos || 0) > 0) {
+        adjusted.chaos = Math.max(0, adjusted.chaos - 4);
+        passiveMessage = 'Sağ terlik olay kaosunu emdi!';
+      } else if (state.characterId === 'goblin' && source === 'goblin') {
+        adjusted.money = (adjusted.money || 0) + 5;
+        adjusted.boredom = (adjusted.boredom || 0) - 3;
+        passiveMessage = 'Goblin stajyer ağı devreye girdi!';
+      } else if (state.characterId === 'opera' && (adjusted.chaos || 0) > 0) {
+        adjusted.boredom = (adjusted.boredom || 0) - 2;
+        passiveMessage = 'Dramatik arya kaosu eğlenceye çevirdi!';
+      }
+      if (passiveMessage) flashPassive(passiveMessage);
+      return adjusted;
+    }
+
+    /* Apply stat changes in one place so every system stays in sync. */
+    function changeStats(delta, source = 'general') {
+      const adjusted = applyCharacterPassive(delta, source);
+      const oldChaos = state.chaos;
+      const oldMoney = state.money;
+      state.boredom = clamp(state.boredom + (adjusted.boredom || 0), 0, 100);
+      state.energy = clamp(state.energy + (adjusted.energy || 0), 0, 100);
+      state.chaos = clamp(state.chaos + (adjusted.chaos || 0), 0, 100);
+      state.money = Math.max(0, state.money + (adjusted.money || 0));
+      if (state.money > oldMoney) state.counters.moneyEarned += state.money - oldMoney;
+      if (state.chaos > oldChaos) screenShake();
+      updateUI();
+      updateDailyQuests();
+      checkAchievements();
+      if (!state.boss.active) checkBossOrEnding();
+    }
+
+    function updateUI() {
+      const stats = ['boredom', 'energy', 'chaos', 'money'];
+      stats.forEach((name) => {
+        const value = Math.round(state[name]);
+        $(`#${name}Value`).textContent = value;
+        $(`#${name}Bar`).style.width = `${name === 'money' ? clamp(value, 0, 100) : value}%`;
+      });
+      updateMood();
+      if (!$('#modal').classList.contains('hidden') && $('#shopGrid')) updateShopButtons();
+    }
+
+    function updateMood() {
+      let mood;
+      if (state.energy <= 15) mood = ['😴', 'Pil Bitti', 'Ruhun şarj kablosu arıyor.'];
+      else if (state.chaos >= 75) mood = ['🤪', 'Kaos Goblini', 'Fizik kurallarını kişisel algılıyorsun.'];
+      else if (state.boredom <= 25) mood = ['🤩', 'Eğlence Büyücüsü', 'Oda artık senden çekiniyor.'];
+      else if (state.boredom <= 60) mood = ['😎', 'Fena Değil', 'Buzdolabına karşı psikolojik üstünlük sende.'];
+      else mood = ['🥱', 'Aşırı Sıkılmış', 'Duvar kağıdıyla göz göze geliyorsun.'];
+      $('#avatar').textContent = (characterDefs[state.characterId] || characterDefs.student).emoji;
+      $('#moodTag').textContent = mood[1];
+      $('#moodText').textContent = mood[2];
+    }
+
+    function addLog(message, tone = '') {
+      const entry = document.createElement('div');
+      entry.className = `log-entry ${tone}`;
+      entry.innerHTML = message;
+      $('#eventLog').prepend(entry);
+      while ($('#eventLog').children.length > 40) $('#eventLog').lastElementChild.remove();
+    }
+
+    function screenShake() {
+      const screen = $('#gameScreen');
+      screen.classList.remove('shake');
+      void screen.offsetWidth;
+      screen.classList.add('shake');
+    }
+
+    function soundText(text) {
+      const effect = document.createElement('div');
+      effect.className = 'sound-text';
+      effect.textContent = text;
+      effect.style.left = `${35 + Math.random() * 30}%`;
+      effect.style.top = `${30 + Math.random() * 35}%`;
+      document.body.appendChild(effect);
+      setTimeout(() => effect.remove(), 850);
+    }
+
+    /* Shop */
+    function openShop() {
+      state.counters.actions++;
+      const cards = shopItems.map((item) => `
+        <article class="shop-item">
+          <span class="shop-emoji">${item.emoji}</span>
+          <div><h4>${item.name}</h4><p>${item.desc}</p>
+          <button class="shop-btn" data-buy="${item.id}">${item.price} 🪙 — Satın Al</button></div>
+        </article>`).join('');
+      openModal(`<h2 id="modalTitle">🛒 Gereksiz Eşya Dükkânı</h2><p>Satıcı bir pelerin giymiş ama altında pijaması var.</p><div id="shopGrid" class="shop-grid">${cards}</div>`);
+      $$('[data-buy]').forEach((button) => button.addEventListener('click', () => buyItem(button.dataset.buy)));
+      updateShopButtons();
+      updateDailyQuests();
+      checkAchievements();
+    }
+
+    function buyItem(id) {
+      const item = shopItems.find((candidate) => candidate.id === id);
+      if (!item || state.inventory.includes(id) || state.money < item.price || state.ended) return;
+      state.money -= item.price;
+      state.inventory.push(id);
+      state.counters.purchases++;
+      addLog(`<strong>Satın alındı:</strong> ${item.emoji} ${item.name}. Mantık kapıda bekliyor.`, 'good');
+      soundText('KA-ÇİNG!');
+      changeStats(item.delta, 'shop');
+      updateShopButtons();
+    }
+
+    function updateShopButtons() {
+      $$('[data-buy]').forEach((button) => {
+        const item = shopItems.find((candidate) => candidate.id === button.dataset.buy);
+        const owned = state.inventory.includes(item.id);
+        button.disabled = owned || state.money < item.price;
+        button.textContent = owned ? '✓ Çantada' : `${item.price} 🪙 — Satın Al`;
+      });
+    }
+
+    /* Reflex mini-game: each hit immediately earns money and lowers boredom. */
+    function startReflexGame() {
+      if (state.ended) return;
+      state.counters.actions++;
+      openModal(`
+        <h2 id="modalTitle">🎯 10 Saniye Refleks</h2>
+        <p>Sarı hedefe olabildiğince hızlı vur. Her tık: +1 para, -1 can sıkıntısı.</p>
+        <div class="reflex-hud"><span>Süre: <b id="reflexTime">10.0</b></span><span>Vuruş: <b id="reflexScore">0</b></span></div>
+        <div id="reflexArena"><button id="reflexTarget" aria-label="Hedef">⚡</button></div>`);
+
+      const arena = $('#reflexArena');
+      const target = $('#reflexTarget');
+      let score = 0;
+      let remaining = 10;
+      let finished = false;
+      const moveTarget = () => {
+        const maxX = Math.max(0, arena.clientWidth - target.offsetWidth - 8);
+        const maxY = Math.max(0, arena.clientHeight - target.offsetHeight - 8);
+        target.style.left = `${4 + Math.random() * maxX}px`;
+        target.style.top = `${4 + Math.random() * maxY}px`;
+      };
+      target.addEventListener('click', () => {
+        if (finished) return;
+        score++;
+        state.counters.clicks++;
+        state.counters.moneyEarned++;
+        state.money++;
+        state.boredom = clamp(state.boredom - 1, 0, 100);
+        $('#reflexScore').textContent = score;
+        if (score % 3 === 0) soundText('TIK!');
+        moveTarget();
+        updateUI();
+        updateDailyQuests();
+        checkAchievements();
+        if (checkBossOrEnding()) {
+          finished = true;
+          clearInterval(timer);
+        }
+      });
+      requestAnimationFrame(moveTarget);
+      const timer = setInterval(() => {
+        remaining = Math.max(0, remaining - .1);
+        const timeEl = $('#reflexTime');
+        if (timeEl) timeEl.textContent = remaining.toFixed(1);
+        if (remaining <= 0) finish();
+      }, 100);
+
+      function finish() {
+        if (finished) return;
+        finished = true;
+        clearInterval(timer);
+        target.disabled = true;
+        target.textContent = '✓';
+        if (score >= 5) {
+          state.counters.miniSuccess++;
+          updateDailyQuests();
+          checkAchievements();
+        }
+        addLog(`Refleks turu bitti: <strong>${score} hedef</strong> vurdun.`, 'good');
+        toast(`${score} vuruş! Parmakların terfi aldı.`);
+      }
+      activeCleanup = () => { finished = true; clearInterval(timer); };
+    }
+
+    /* Memory mini-game: show a sequence, then let the player repeat it. */
+    function startMemoryGame() {
+      if (state.ended) return;
+      state.counters.actions++;
+      const emojis = ['🍕', '👻', '🦆', '🚀', '🥔', '👺', '🪩', '🐸'];
+      const length = 4 + Math.min(2, state.counters.memoryWins);
+      const sequence = Array.from({ length }, () => randomFrom(emojis));
+      let input = [];
+      let accepting = false;
+
+      openModal(`
+        <h2 id="modalTitle">🧠 Emoji Hafızası</h2>
+        <p>Diziyi aklında tut. Birazdan sislerin içine karışacak.</p>
+        <div id="memoryDisplay">Hazır?</div>
+        <div id="emojiGrid" class="emoji-grid hidden">${emojis.map((emoji) => `<button class="emoji-btn">${emoji}</button>`).join('')}</div>`);
+
+      const display = $('#memoryDisplay');
+      let step = 0;
+      const revealTimer = setInterval(() => {
+        if (!display) return;
+        if (step < sequence.length) {
+          display.textContent = sequence[step];
+          soundText('BİP!');
+          step++;
+        } else {
+          clearInterval(revealTimer);
+          display.textContent = 'Şimdi sen!';
+          $('#emojiGrid').classList.remove('hidden');
+          accepting = true;
+        }
+      }, 720);
+
+      $$('.emoji-btn').forEach((button) => button.addEventListener('click', () => {
+        if (!accepting) return;
+        const chosen = button.textContent;
+        const index = input.length;
+        input.push(chosen);
+        display.textContent = input.join(' ');
+        if (chosen !== sequence[index]) {
+          accepting = false;
+          display.textContent = `Olmadı! Doğrusu: ${sequence.join(' ')}`;
+          addLog('Emoji hafızası kısa devre yaptı. Beynin “buffering” dedi.', 'bad');
+          soundText('DÜT!');
+          changeStats({ energy: -4, chaos: 3 }, 'memory');
+        } else if (input.length === sequence.length) {
+          accepting = false;
+          state.counters.memoryWins++;
+          state.counters.miniSuccess++;
+          display.textContent = 'Mükemmel! 🧠✨';
+          addLog('Emoji dizisini kusursuz hatırladın. Patates çok gururlu.', 'good');
+          soundText('ŞAAK!');
+          changeStats({ boredom: -14, money: 7, energy: -3 }, 'memory');
+        }
+      }));
+
+      activeCleanup = () => clearInterval(revealTimer);
+      updateDailyQuests();
+      checkAchievements();
+    }
+
+    /* Chaos Dice mini-game. */
+    const diceOutcomes = [
+      { text: '1 — Zar sana küstü. Enerji kaçtı.', delta: { energy: -12, chaos: 4 } },
+      { text: '2 — İki altın ve iki soru işareti buldun.', delta: { money: 2, boredom: -4 } },
+      { text: '3 — Dengeli saçmalık! Her şey biraz değişti.', delta: { boredom: -7, energy: 5, chaos: 7 } },
+      { text: '4 — Dört goblin aerobik yaptı.', delta: { boredom: -11, energy: -6, money: 4 } },
+      { text: '5 — Cep boyutunda fırtına! Eğlenceli ama tehlikeli.', delta: { boredom: -15, chaos: 16 } },
+      { text: '6 — EFSANEVİ ALTILI! Evren sana bahşiş verdi.', delta: { boredom: -20, money: 15, energy: 10, chaos: 8 } }
+    ];
+
+    function openDiceGame() {
+      if (state.ended) return;
+      state.counters.actions++;
+      openModal(`
+        <h2 id="modalTitle">🎲 Kaos Zarı</h2>
+        <p>Sonuçlar dramatik olabilir. Zarın hukuk ekibi sorumluluk kabul etmiyor.</p>
+        <div class="dice-wrap"><div id="dice">?</div></div>
+        <div id="diceResult">Kader küpünü yuvarlamaya hazır mısın?</div>
+        <div style="text-align:center"><button id="rollDiceBtn" class="primary-btn">Zarı Yuvarla</button></div>`);
+      $('#rollDiceBtn').addEventListener('click', rollDice);
+      updateDailyQuests();
+      checkAchievements();
+    }
+
+    function rollDice() {
+      const button = $('#rollDiceBtn');
+      const dice = $('#dice');
+      if (!button || button.disabled) return;
+      button.disabled = true;
+      dice.classList.add('rolling');
+      dice.textContent = randomFrom(['⚀','⚁','⚂','⚃','⚄','⚅']);
+      setTimeout(() => {
+        const roll = Math.floor(Math.random() * 6) + 1;
+        const outcome = diceOutcomes[roll - 1];
+        state.counters.diceRolls++;
+        if (roll === 6) {
+          state.counters.diceSixes++;
+          state.counters.miniSuccess++;
+        }
+        dice.classList.remove('rolling');
+        dice.textContent = roll;
+        $('#diceResult').textContent = outcome.text;
+        button.disabled = false;
+        addLog(`<strong>Kaos zarı:</strong> ${outcome.text}`, roll === 6 ? 'good' : '');
+        soundText(roll === 6 ? 'JACKPOT!' : 'TAK!');
+        changeStats(outcome.delta, 'dice');
+      }, 720);
+    }
+
+    const bossRounds = [
+      {
+        title: 'Ejderha Esniyor',
+        prompt: 'Ejderha seni sıkıcı bir PowerPoint sunumuna hapsetmeye hazırlanıyor.',
+        choices: [
+          { emoji: '😂', label: 'Kötü Bir Fıkra Anlat', hint: '-4 sıkıntı, +7 kaos, -3 enerji', power: 2, score: 120, delta: { boredom: -4, chaos: 7, energy: -3 }, outcome: 'Ejderha istemeden güldü ve bunu inkâr etti.' },
+          { emoji: '🧾', label: 'Vergi Formu Göster', hint: '-2 sıkıntı, +2 kaos, -6 enerji', power: 3, score: 170, delta: { boredom: -2, chaos: 2, energy: -6 }, outcome: 'Ejderha bürokrasi görünce dehşete düştü.' },
+          { emoji: '😴', label: 'Uyuyormuş Gibi Yap', hint: '+4 sıkıntı, -2 kaos, +6 enerji', power: 1, score: 60, delta: { boredom: 4, chaos: -2, energy: 6 }, outcome: 'Ejderha horlamanı eleştirmek için saldırmayı unuttu.' }
+        ]
+      },
+      {
+        title: 'Sıkıntı Alevi',
+        prompt: 'Ejderha ağzından pazartesi toplantısı püskürtüyor!',
+        choices: [
+          { emoji: '☕', label: 'Kahve Mızrağı', hint: '-5 sıkıntı, +8 enerji, +8 kaos', power: 2, score: 130, delta: { boredom: -5, energy: 8, chaos: 8 }, outcome: 'Çift shot mızrak, ejderhanın takvimini deldi.' },
+          { emoji: '🧊', label: 'Buzdolabını Avukat Yap', hint: '-3 sıkıntı, -4 enerji, +3 kaos', power: 3, score: 180, delta: { boredom: -3, energy: -4, chaos: 3 }, outcome: 'Buzdolabı üç maddelik savunmayla salonu susturdu.' },
+          { emoji: '🪩', label: 'Acil Disko Başlat', hint: '-7 sıkıntı, -6 enerji, +10 kaos', power: 2, score: 145, delta: { boredom: -7, energy: -6, chaos: 10 }, outcome: 'Ejderha ritmi kaçırdı ama kuyruğuyla tempo tuttu.' }
+        ]
+      },
+      {
+        title: 'Son Esneme',
+        prompt: 'Ejderha dev bir esnemeyle bütün eğlenceyi yutmaya çalışıyor.',
+        choices: [
+          { emoji: '🥔', label: 'Destek Patatesini Fırlat', hint: '-6 sıkıntı, +4 enerji, +4 kaos', power: 3, score: 220, delta: { boredom: -6, energy: 4, chaos: 4 }, outcome: 'Patates duygusal bir konuşma yaptı. Ejderha ağladı.' },
+          { emoji: '🎶', label: 'Yüksek Do Aryası', hint: '-8 sıkıntı, -7 enerji, +9 kaos', power: 2, score: 190, delta: { boredom: -8, energy: -7, chaos: 9 }, outcome: 'Kristal bardaklar ve ejderhanın özgüveni çatladı.' },
+          { emoji: '📴', label: 'Wi-Fi’ı Fişten Çek', hint: '+2 sıkıntı, -6 kaos, +2 enerji', power: 1, score: 80, delta: { boredom: 2, chaos: -6, energy: 2 }, outcome: 'Ejderha bağlantıyı kaybedip yeniden başlatılıyor.' }
+        ]
+      }
+    ];
+
+    function checkBossOrEnding() {
+      if (!state.ended && state.started && !state.boss.triggered && state.boredom <= 20) {
+        startBossFight();
+        return true;
+      }
+      checkEnding();
+      return state.ended;
+    }
+
+    function startBossFight() {
+      state.boss.triggered = true;
+      state.boss.active = true;
+      state.boss.round = 0;
+      state.boss.power = 0;
+      state.boss.scoreBonus = 0;
+      addLog('<strong>BOSS!</strong> Büyük Can Sıkıntısı Ejderi tavandan dramatik biçimde indi.', 'bad');
+      soundText('ROAAAR!');
+      screenShake();
+      openModal('<div id="bossContent" class="boss-card"></div>', true);
+      renderBossRound();
+    }
+
+    function renderBossRound() {
+      const round = bossRounds[state.boss.round];
+      if (!round) return finishBossFight();
+      const content = $('#bossContent') || $('#modalContent');
+      content.innerHTML = `
+        <div class="boss-round">Raunt ${state.boss.round + 1} / 3</div>
+        <div class="boss-avatar">🐉</div>
+        <h2 id="modalTitle">Büyük Can Sıkıntısı Ejderi</h2>
+        <h3>${round.title}</h3>
+        <p>${round.prompt}</p>
+        <div class="boss-meter"><div class="bar"><div class="bar-fill bar-chaos" style="width:${(state.boss.round / 3) * 100}%"></div></div></div>
+        <div class="boss-choices">${round.choices.map((choice, index) => `
+          <button class="boss-choice" type="button" data-boss-choice="${index}">
+            <span>${choice.emoji}</span>${choice.label}<small>${choice.hint}</small>
+          </button>`).join('')}</div>`;
+      $$('[data-boss-choice]').forEach((button) => button.addEventListener('click', () => chooseBossMove(Number(button.dataset.bossChoice))));
+    }
+
+    function chooseBossMove(choiceIndex) {
+      const round = bossRounds[state.boss.round];
+      const choice = round && round.choices[choiceIndex];
+      if (!choice || !state.boss.active) return;
+      $$('[data-boss-choice]').forEach((button) => { button.disabled = true; });
+      state.boss.power += choice.power;
+      state.boss.scoreBonus += choice.score;
+      addLog(`<strong>Ejderha raunt ${state.boss.round + 1}:</strong> ${choice.outcome} (+${choice.score} skor)`, 'good');
+      soundText(choice.power === 3 ? 'KRİTİK!' : 'VUUŞ!');
+      changeStats(choice.delta, 'boss');
+      state.boss.round++;
+
+      $('#modalContent').innerHTML = `<div class="boss-card"><div class="boss-avatar">${choice.emoji}</div><h2 id="modalTitle">${choice.outcome}</h2><p>Ejderha gücü: ${state.boss.power} / 6</p></div>`;
+      setTimeout(() => {
+        if (state.boss.active) {
+          $('#modalContent').innerHTML = '<div id="bossContent" class="boss-card"></div>';
+          renderBossRound();
+        }
+      }, 850);
+    }
+
+    function finishBossFight() {
+      if (!state.boss.active) return;
+      state.boss.active = false;
+      const won = state.boss.power >= 6;
+      closeModal(true);
+      if (won) {
+        state.boss.won = true;
+        state.boss.scoreBonus += 700;
+        addLog('<strong>Ejderha yenildi!</strong> Sıkıntı alevi konfetiye dönüştü. +700 boss skoru!', 'good');
+        soundText('EJDERHA GİTTİ!');
+        changeStats({ boredom: -100 }, 'boss');
+      } else {
+        state.boss.scoreBonus = Math.round(state.boss.scoreBonus / 2);
+        addLog('<strong>Ejderha kaçtı ama yenilmedi.</strong> Can sıkıntını geri püskürttü; tekrar eğlenmen gerekecek.', 'bad');
+        soundText('PÜFF!');
+        changeStats({ boredom: Math.max(0, 38 - state.boredom), chaos: 8 }, 'boss');
+      }
+    }
+
+    function openModal(html, locked = false) {
+      closeModal(true);
+      modalLocked = locked;
+      $('#modalContent').innerHTML = html;
+      $('#modal').classList.remove('hidden');
+      $('#closeModalBtn').classList.toggle('hidden', locked);
+      document.body.style.overflow = 'hidden';
+      if (!locked) setTimeout(() => $('#closeModalBtn').focus(), 0);
+    }
+
+    function closeModal(force = false) {
+      if (modalLocked && !force) return;
+      if (activeCleanup) activeCleanup();
+      activeCleanup = null;
+      modalLocked = false;
+      $('#modal').classList.add('hidden');
+      $('#closeModalBtn').classList.remove('hidden');
+      $('#modalContent').innerHTML = '';
+      document.body.style.overflow = '';
+    }
+
+    /* Three deterministic quests: their definitions stay fixed for the local day. */
+    function createDailyQuests() {
+      const now = new Date();
+      const dateKey = `${now.getFullYear()}-${now.getMonth() + 1}-${now.getDate()}`;
+      let seed = [...dateKey].reduce((sum, char) => ((sum * 31) + char.charCodeAt(0)) >>> 0, 2166136261);
+      const pool = [...dailyQuestDefs];
+      const selected = [];
+      while (selected.length < 3 && pool.length) {
+        seed = (seed * 1664525 + 1013904223) >>> 0;
+        selected.push(pool.splice(seed % pool.length, 1)[0]);
+      }
+      dailyQuests = selected.map((definition) => ({ ...definition, value: 0, completed: false }));
+      renderDailyQuests();
+    }
+
+    function updateDailyQuests(finalizing = false) {
+      dailyQuests.forEach((quest) => {
+        if (quest.completed) return;
+        const rawValue = quest.endOnly && !finalizing ? 0 : Number(quest.progress());
+        quest.value = clamp(Number.isFinite(rawValue) ? rawValue : 0, 0, quest.goal);
+        if (quest.value >= quest.goal && (!quest.endOnly || finalizing)) {
+          quest.completed = true;
+          if (state.started) {
+            toast(`📌 Günlük görev: ${quest.title} (+250 skor)`);
+            addLog(`<strong>Günlük görev tamamlandı:</strong> ${quest.title}. Final skoruna +250!`, 'good');
+            soundText('TADAA!');
+          }
+        }
+      });
+      renderDailyQuests();
+    }
+
+    function renderDailyQuests() {
+      const container = $('#dailyQuestList');
+      if (!container) return;
+      container.innerHTML = dailyQuests.map((quest) => {
+        const value = Math.min(quest.goal, Math.round(quest.value || 0));
+        const percent = quest.completed ? 100 : (value / quest.goal) * 100;
+        return `<article class="quest-item ${quest.completed ? 'complete' : ''}">
+          <div class="quest-head"><span>${quest.completed ? '✅' : '📍'} ${quest.title}</span><span>${value}/${quest.goal}</span></div>
+          <div class="bar"><div class="bar-fill bar-energy" style="width:${percent}%"></div></div>
+          <p>${quest.desc}</p>
+        </article>`;
+      }).join('');
+      const completed = dailyQuests.filter((quest) => quest.completed).length;
+      $('#dailyQuestSummary').textContent = `${completed} / 3 tamamlandı`;
+      $('#dailyQuestBonus').textContent = `+${completed * 250} puan`;
+    }
+
+    /* Achievements persist between browser refreshes. */
+    function checkAchievements() {
+      achievementDefs.forEach((achievement) => {
+        if (!unlocked.includes(achievement.id) && achievement.test()) {
+          unlocked.push(achievement.id);
+          localStorage.setItem('csk-achievements', JSON.stringify(unlocked));
+          toast(`🏆 Başarım: ${achievement.name}`);
+          addLog(`<strong>Başarım açıldı:</strong> ${achievement.icon} ${achievement.name}`, 'good');
+        }
+      });
+      renderAchievements();
+    }
+
+    function renderAchievements() {
+      $('#achievementSummary').textContent = `${unlocked.length} / ${achievementDefs.length} açıldı`;
+      $('#achievementList').innerHTML = achievementDefs.map((achievement) => `
+        <div class="achievement ${unlocked.includes(achievement.id) ? 'unlocked' : ''}" title="${achievement.name}: ${achievement.desc}" aria-label="${achievement.name}">${achievement.icon}</div>`).join('');
+    }
+
+    function toast(message) {
+      const element = document.createElement('div');
+      element.className = 'toast';
+      element.textContent = message;
+      $('#toastArea').appendChild(element);
+      setTimeout(() => element.remove(), 3150);
+    }
+
+    async function copyChallengeMessage() {
+      if (!state.ended) return;
+      const message = `My score is ${state.finalScore} in Can Sıkıntısı Krallığı. Can you beat me?\n${window.location.href}`;
+      try {
+        if (!navigator.clipboard || typeof navigator.clipboard.writeText !== 'function') {
+          throw new Error('Clipboard API kullanılamıyor.');
+        }
+        await navigator.clipboard.writeText(message);
+        state.counters.shares++;
+        $('#challengeShareStatus').textContent = 'Meydan okuma panoya kopyalandı! 📋';
+        checkAchievements();
+        toast('Arkadaşına gönder; rekabet başlasın!');
+      } catch (clipboardError) {
+        try {
+          const textarea = document.createElement('textarea');
+          textarea.value = message;
+          textarea.setAttribute('readonly', '');
+          textarea.style.position = 'fixed';
+          textarea.style.opacity = '0';
+          document.body.appendChild(textarea);
+          textarea.select();
+          const copied = document.execCommand('copy');
+          textarea.remove();
+          if (!copied) throw clipboardError;
+          state.counters.shares++;
+          $('#challengeShareStatus').textContent = 'Meydan okuma panoya kopyalandı! 📋';
+          checkAchievements();
+        } catch (fallbackError) {
+          console.warn('Meydan okuma kopyalanamadı:', fallbackError);
+          $('#challengeShareStatus').textContent = 'Kopyalanamadı; tarayıcın panoya erişim vermedi.';
+        }
+      }
+    }
+
+    function checkEnding() {
+      if (state.ended || !state.started) return;
+      let type = null;
+      if (state.boredom <= 0) type = 'win';
+      else if (state.chaos >= 100) type = 'chaos';
+      else if (state.energy <= 0) type = 'sleep';
+      if (!type) return;
+
+      state.ended = true;
+      state.result = type;
+      closeModal(true);
+      updateDailyQuests(true);
+      checkAchievements();
+      const dramaticWin = type === 'win' && state.boss.won;
+      const title = dramaticWin ? 'Ejderha Düştü, Krallık Kurtuldu!' : type === 'win' ? 'Sıkıntı Fethedildi!' : type === 'chaos' ? 'Kaos Kazandı!' : 'Mışıl Mışıl Son';
+      const emoji = dramaticWin ? '🐉👑🎉' : type === 'win' ? '👑🎉' : type === 'chaos' ? '💥🌀' : '😴💤';
+      $('#endTitle').textContent = title;
+      $('#endEmoji').textContent = emoji;
+      $('#endMessage').textContent = randomFrom(dramaticWin ? endings.bossWin : endings[type]);
+      const finalScore = calculateFinalScore(type);
+      state.finalScore = finalScore;
+      const questBonus = dailyQuests.filter((quest) => quest.completed).length * 250;
+      const bossBonus = state.boss.scoreBonus || 0;
+      $('#endScore').textContent = `${finalScore} puan · Görev +${questBonus} · Boss +${bossBonus}`;
+      $('#challengeShareStatus').textContent = '';
+      setSaveStatus('Skor buluta gönderiliyor...');
+      $('#endScreen').classList.remove('hidden');
+      if (type === 'win') createConfetti();
+      saveFinalScore(type, finalScore);
+    }
+
+    function createConfetti() {
+      const colors = ['#ff4fd8', '#34e7e4', '#ffd166', '#8b5cf6', '#55ef9d', '#ff5d73'];
+      for (let i = 0; i < 120; i++) {
+        const piece = document.createElement('i');
+        piece.className = 'confetti';
+        piece.style.left = `${Math.random() * 100}vw`;
+        piece.style.background = randomFrom(colors);
+        piece.style.setProperty('--drift', `${-120 + Math.random() * 240}px`);
+        piece.style.animationDuration = `${2.4 + Math.random() * 2.5}s`;
+        piece.style.animationDelay = `${Math.random() * 1.1}s`;
+        piece.style.transform = `rotate(${Math.random() * 180}deg)`;
+        document.body.appendChild(piece);
+        setTimeout(() => piece.remove(), 5200);
+      }
+    }
+
+    init();
+  </script>
+</body>
+</html>
