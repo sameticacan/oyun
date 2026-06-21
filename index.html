@@ -2,7 +2,7 @@
 <html lang="tr">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <meta name="theme-color" content="#111229">
   <title>Can Sıkıntısı Krallığı</title>
   <style>
@@ -62,6 +62,18 @@
       background-image: radial-gradient(var(--border) 1px, transparent 1px);
       background-size: 25px 25px;
     }
+
+    body::after {
+      content: "";
+      position: fixed;
+      inset: 0;
+      z-index: 500;
+      opacity: 0;
+      pointer-events: none;
+      background: radial-gradient(circle 90px at var(--tap-x, 50%) var(--tap-y, 70%), rgba(52, 231, 228, .28), rgba(139, 92, 246, .1) 45%, transparent 72%);
+    }
+
+    body.haptic-pulse::after { animation: screenPulse .38s ease-out both; }
 
     button { font: inherit; }
 
@@ -261,6 +273,8 @@
     .primary-btn:active, .action-btn:active, .mini-btn:active, .shop-btn:active, .icon-btn:active {
       transform: scale(.96);
     }
+
+    button.haptic-tap { animation: hapticTap .32s cubic-bezier(.2, .9, .25, 1.25) both; }
 
     /* Main game layout */
     #gameScreen {
@@ -965,6 +979,11 @@
 
     .latest-event-message strong { color: var(--text); font-weight: 950; }
 
+    .mobile-latest-event-card,
+    .mobile-bottom-nav,
+    .mobile-shop-panel,
+    .one-hand-toggle { display: none; }
+
     .sound-text {
       position: fixed;
       z-index: 400;
@@ -1002,6 +1021,17 @@
     @keyframes soundPop { 0% { opacity: 0; transform: translate(-50%,-50%) scale(.3) rotate(-15deg); } 45% { opacity: 1; transform: translate(-50%,-80%) scale(1.1) rotate(6deg); } 100% { opacity: 0; transform: translate(-50%,-150%) scale(1.25) rotate(-3deg); } }
     @keyframes toastIn { from { opacity: 0; transform: translateX(30px); } }
     @keyframes toastOut { to { opacity: 0; transform: translateX(30px); } }
+    @keyframes hapticTap {
+      0% { transform: scale(1); filter: brightness(1); box-shadow: 0 0 0 0 rgba(52, 231, 228, 0); }
+      38% { transform: scale(.91); filter: brightness(1.18); box-shadow: 0 0 0 5px rgba(52, 231, 228, .2), 0 0 22px rgba(139, 92, 246, .28); }
+      72% { transform: scale(1.035); filter: brightness(1.1); box-shadow: 0 0 0 2px rgba(52, 231, 228, .1), 0 0 13px rgba(139, 92, 246, .18); }
+      100% { transform: scale(1); filter: brightness(1); }
+    }
+    @keyframes screenPulse {
+      0% { opacity: 0; }
+      32% { opacity: .72; }
+      100% { opacity: 0; }
+    }
     @keyframes latestEventIn {
       from { opacity: 0; transform: translate(-50%, -14px) scale(.98); }
       to { opacity: 1; transform: translate(-50%, 0) scale(1); }
@@ -1019,41 +1049,259 @@
       #eventLog { height: 210px; }
     }
 
-    @media (max-width: 720px) {
-      #gameScreen { padding-top: 12px; }
-      .brand span:last-child { display: none; }
-      .game-grid { grid-template-columns: 1fr; }
-      .left-column { grid-template-columns: 1fr; }
-      .right-column { grid-column: auto; grid-template-columns: 1fr; }
-      .leaderboard-panel { grid-column: auto; }
-      .character-card { display: grid; grid-template-columns: 100px 1fr; align-items: center; text-align: left; }
-      .avatar-wrap { width: 86px; height: 86px; margin: 0; }
-      #avatar { font-size: 3.2rem; }
-      .action-grid { grid-template-columns: 1fr; }
-      .action-btn { min-height: 88px; }
-      .mini-grid { grid-template-columns: 1fr; }
-      .mini-btn { min-height: 62px; }
-      .shop-grid { grid-template-columns: 1fr; }
-      .character-picker { grid-template-columns: repeat(2, 1fr); }
-      .character-option { min-height: 138px; }
-      .boss-choices { grid-template-columns: 1fr; }
-      .boss-choice { min-height: 82px; }
-      .modal-card { max-height: 92vh; }
-      .title-cloud-status { position: static; margin-bottom: 16px; }
-      .top-actions .cloud-status { padding-inline: 9px; }
-      .top-actions .cloud-status span:last-child { display: none; }
-      .latest-event-toast {
-        top: max(76px, calc(env(safe-area-inset-top) + 64px));
-        width: calc(100vw - 24px);
-        gap: 12px;
-        padding: 15px 16px;
-        border-width: 2px;
-        border-radius: 18px;
-        box-shadow: 0 16px 42px rgba(0, 0, 0, .38), 0 0 28px var(--event-glow);
+    @keyframes mobileTabIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (max-width: 767px) {
+      body.game-active { height: 100dvh; min-height: 100dvh; overflow: hidden; }
+
+      #gameScreen {
+        width: 100%;
+        height: 100dvh;
+        min-height: 100dvh;
+        max-width: none;
+        padding: 0;
+        overflow: hidden;
       }
-      .latest-event-icon { width: 42px; height: 42px; font-size: 1.4rem; }
-      .latest-event-label { font-size: .68rem; }
-      .latest-event-message { font-size: 1rem; line-height: 1.42; }
+
+      .topbar {
+        position: fixed;
+        inset: 0 0 auto;
+        z-index: 80;
+        height: calc(44px + env(safe-area-inset-top));
+        margin: 0;
+        padding: env(safe-area-inset-top) 10px 0;
+        border-bottom: 1px solid var(--border);
+        background: rgba(12, 13, 33, .9);
+        box-shadow: 0 6px 20px rgba(0, 0, 0, .18);
+        backdrop-filter: blur(18px);
+      }
+
+      body.light .topbar { background: rgba(245, 240, 255, .92); }
+      .brand { gap: 6px; font-size: .82rem; }
+      .brand span:first-child { font-size: 1.25rem; }
+      .brand span:last-child { display: none; }
+      .top-actions { gap: 5px; }
+      .top-actions .cloud-status { min-width: 32px; padding: 0 8px; }
+      .top-actions .cloud-status span:last-child { display: none; }
+      .icon-btn { min-width: 34px; width: 34px; height: 34px; padding: 0; border-radius: 10px; }
+      .one-hand-toggle { display: inline-grid; place-items: center; }
+      .one-hand-toggle[aria-pressed="true"] { color: #171329; border-color: var(--yellow); background: var(--yellow); box-shadow: 0 0 16px rgba(255, 209, 102, .28); }
+      #restartBtn span { display: none; }
+
+      .game-grid {
+        position: fixed;
+        inset: calc(172px + env(safe-area-inset-top)) 0 calc(70px + env(safe-area-inset-bottom));
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        width: 100%;
+        padding: 8px 10px 14px;
+        overflow-x: hidden;
+        overflow-y: auto;
+        overscroll-behavior: contain;
+        scrollbar-width: thin;
+        -webkit-overflow-scrolling: touch;
+      }
+
+      .left-column, .center-column, .right-column { display: contents; }
+      [data-mobile-tab-panel] { display: none; width: 100%; min-width: 0; }
+      body[data-mobile-tab="play"] [data-mobile-tab-panel="play"],
+      body[data-mobile-tab="log"] [data-mobile-tab-panel="log"],
+      body[data-mobile-tab="market"] [data-mobile-tab-panel="market"],
+      body[data-mobile-tab="quests"] [data-mobile-tab-panel="quests"],
+      body[data-mobile-tab="score"] [data-mobile-tab-panel="score"] {
+        display: block;
+        animation: mobileTabIn .24s ease-out both;
+      }
+
+      .actions-panel { order: 1; }
+      .mini-panel { order: 2; }
+      .character-card { order: 3; }
+      .challenge-card { order: 1; }
+      .achievement-panel { order: 2; }
+      .mobile-shop-panel, .log-panel, .leaderboard-panel { order: 1; }
+
+      .panel { border-radius: 16px; box-shadow: 0 8px 24px rgba(0, 0, 0, .18); backdrop-filter: blur(12px); }
+
+      .stats-panel {
+        position: fixed;
+        top: calc(44px + env(safe-area-inset-top));
+        left: 0;
+        z-index: 79;
+        width: 100%;
+        height: 62px;
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 5px;
+        padding: 7px 8px;
+        border: 0;
+        border-bottom: 1px solid var(--border);
+        border-radius: 0;
+        background: rgba(21, 23, 53, .94);
+        box-shadow: 0 7px 22px rgba(0, 0, 0, .22);
+      }
+
+      body.light .stats-panel { background: rgba(255, 255, 255, .95); }
+      .stats-panel .stat { min-width: 0; margin: 0; padding: 4px 5px; border-radius: 10px; background: rgba(127,127,150,.08); }
+      .stats-panel .stat::before { content: attr(data-mobile-icon); display: inline; margin-right: 3px; font-size: .9rem; }
+      .stats-panel .stat-label { display: inline-flex; margin: 0 0 5px; font-size: .76rem; line-height: 1; vertical-align: 1px; }
+      .stats-panel .stat-label span:first-child { display: none; }
+      .stats-panel .stat-label span:last-child { overflow: hidden; font-weight: 950; text-overflow: ellipsis; }
+      .stats-panel .bar { height: 5px; }
+
+      .mobile-latest-event-card {
+        --event-accent: var(--cyan);
+        --event-glow: rgba(52, 231, 228, .14);
+        position: fixed;
+        top: calc(106px + env(safe-area-inset-top));
+        left: 8px;
+        z-index: 78;
+        width: calc(100% - 16px);
+        height: 60px;
+        display: grid;
+        grid-template-columns: 34px minmax(0, 1fr) auto;
+        gap: 9px;
+        align-items: center;
+        padding: 8px 10px;
+        border: 1px solid var(--event-accent);
+        border-radius: 14px;
+        color: var(--text);
+        background: linear-gradient(100deg, var(--event-glow), transparent 60%), var(--card-solid);
+        box-shadow: 0 7px 22px rgba(0,0,0,.2);
+        text-align: left;
+        cursor: pointer;
+      }
+
+      .mobile-latest-event-card.good { --event-accent: var(--green); --event-glow: rgba(85, 239, 157, .14); }
+      .mobile-latest-event-card.bad { --event-accent: var(--red); --event-glow: rgba(255, 93, 115, .16); }
+      .mobile-latest-event-card.chaos { --event-accent: var(--pink); --event-glow: rgba(255, 79, 216, .16); }
+      .mobile-latest-event-card.money { --event-accent: var(--yellow); --event-glow: rgba(255, 209, 102, .16); }
+      .mobile-latest-event-card.achievement { --event-accent: #f8c7ff; --event-glow: rgba(139, 92, 246, .18); }
+      .mobile-latest-icon { font-size: 1.35rem; text-align: center; }
+      .mobile-latest-copy { min-width: 0; }
+      .mobile-latest-label { display: block; margin-bottom: 2px; color: var(--event-accent); font-size: .58rem; font-weight: 950; letter-spacing: .1em; text-transform: uppercase; }
+      .mobile-latest-message { display: -webkit-box; overflow: hidden; font-size: .76rem; font-weight: 800; line-height: 1.25; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
+      .mobile-latest-arrow { color: var(--muted); font-size: .9rem; }
+
+      body.game-active .mobile-bottom-nav {
+        position: fixed;
+        inset: auto 0 0;
+        z-index: 90;
+        height: calc(70px + env(safe-area-inset-bottom));
+        display: grid;
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+        align-items: stretch;
+        padding: 5px 6px calc(5px + env(safe-area-inset-bottom));
+        border-top: 1px solid var(--border);
+        background: rgba(12, 13, 33, .94);
+        box-shadow: 0 -8px 26px rgba(0, 0, 0, .28);
+        backdrop-filter: blur(20px);
+      }
+
+      body.light .mobile-bottom-nav { background: rgba(255, 255, 255, .95); }
+      .mobile-tab-btn {
+        min-width: 0;
+        min-height: 58px;
+        padding: 5px 2px;
+        border: 0;
+        border-radius: 13px;
+        color: var(--muted);
+        background: transparent;
+        cursor: pointer;
+        font-size: .66rem;
+        font-weight: 900;
+        line-height: 1.1;
+        transition: color .18s ease, background .18s ease, transform .18s ease;
+      }
+
+      .mobile-tab-btn span { display: block; margin-bottom: 4px; font-size: 1.25rem; }
+      .mobile-tab-btn.active { color: var(--text); background: linear-gradient(145deg, rgba(139,92,246,.28), rgba(255,79,216,.16)); box-shadow: inset 0 0 0 1px rgba(139,92,246,.38); }
+      .mobile-tab-btn:active { transform: scale(.94); }
+
+      .actions-panel { padding: 12px; }
+      .actions-panel .section-kicker { display: none; }
+      .actions-panel h2 { margin: 0 0 10px; font-size: 1.02rem; letter-spacing: -.02em; }
+      .action-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin-top: 0; }
+      .action-btn { min-width: 0; min-height: 88px; padding: 10px 8px; border-radius: 14px; text-align: center; }
+      .action-icon { margin-bottom: 4px; font-size: 1.45rem; }
+      .action-name { display: -webkit-box; overflow: hidden; font-size: .78rem; line-height: 1.18; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
+      .action-cost { display: none; }
+
+      .mini-panel { padding: 10px; }
+      .mini-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 7px; }
+      .mini-btn { min-width: 0; min-height: 62px; padding: 7px 3px; border-radius: 12px; font-size: .7rem; }
+
+      body.one-hand-mode[data-mobile-tab="play"] .character-card {
+        order: 1;
+        margin-top: clamp(28px, 6dvh, 54px);
+      }
+      body.one-hand-mode[data-mobile-tab="play"] .actions-panel { order: 2; }
+      body.one-hand-mode[data-mobile-tab="play"] .mini-panel { order: 3; }
+
+      body[data-mobile-tab="play"] .character-card { display: grid; grid-template-columns: 58px minmax(0, 1fr); gap: 10px; align-items: center; padding: 10px 12px; text-align: left; }
+      .avatar-wrap { width: 52px; height: 52px; margin: 0; border-width: 2px; }
+      #avatar { font-size: 2rem; }
+      .mood-tag { padding: 3px 7px; font-size: .58rem; }
+      .character-card h2 { display: inline; margin: 0 5px 0 0; font-size: .92rem; }
+      .character-card #characterNameDisplay { display: inline; font-size: .72rem; }
+      .character-card #moodText { display: none; }
+      .passive-line { overflow: hidden; margin-top: 4px !important; padding: 4px 6px; font-size: .63rem !important; text-overflow: ellipsis; white-space: nowrap; }
+
+      .challenge-card, .achievement-panel, .log-panel, .leaderboard-panel, .mobile-shop-panel { padding: 13px; }
+      .challenge-card > p { margin-bottom: 8px; font-size: .72rem; }
+      #dailyQuestList { gap: 7px; margin-top: 8px; }
+      .quest-item { padding: 8px; }
+      .quest-item p { display: none; }
+      #achievementList { grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 5px; margin-top: 8px; }
+      .achievement { border-radius: 9px; font-size: 1.05rem; }
+
+      .log-panel { min-height: calc(100dvh - 264px - env(safe-area-inset-top) - env(safe-area-inset-bottom)); }
+      #eventLog { height: calc(100dvh - 306px - env(safe-area-inset-top) - env(safe-area-inset-bottom)); min-height: 240px; padding-right: 3px; }
+      .log-entry { padding: 9px 10px; font-size: .78rem; }
+
+      .mobile-shop-panel h3 { margin: 0; }
+      .mobile-shop-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+      .mobile-shop-balance { color: var(--yellow); font-size: .76rem; font-weight: 950; white-space: nowrap; }
+      .mobile-shop-panel > p { margin: 5px 0 0; color: var(--muted); font-size: .7rem; }
+      .mobile-shop-panel .shop-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin-top: 10px; }
+      .mobile-shop-panel .shop-item { display: block; min-width: 0; padding: 10px; border-radius: 13px; }
+      .mobile-shop-panel .shop-emoji { display: block; margin-bottom: 3px; font-size: 1.5rem; }
+      .mobile-shop-panel .shop-item h4 { min-height: 31px; font-size: .78rem; line-height: 1.15; }
+      .mobile-shop-panel .shop-item p { display: -webkit-box; min-height: 30px; overflow: hidden; font-size: .66rem; line-height: 1.25; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
+      .mobile-shop-panel .shop-btn { width: 100%; padding: 8px 3px; font-size: .66rem; }
+
+      .leaderboard-tabs { gap: 5px; }
+      .leaderboard-tab { min-height: 36px; }
+      .leaderboard-row { padding: 8px; }
+
+      .character-picker { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .character-option { min-width: 0; min-height: 138px; }
+      .boss-choices { grid-template-columns: 1fr; }
+      .boss-choice { min-height: 72px; }
+      .modal { z-index: 120; padding: 10px; }
+      .modal-card { max-height: calc(100dvh - 20px); padding: 18px; border-radius: 20px; }
+      body.one-hand-mode .modal { place-items: end center; padding: 10px 10px calc(78px + env(safe-area-inset-bottom)); }
+      body.one-hand-mode .modal-card { max-height: calc(100dvh - 100px - env(safe-area-inset-bottom)); border-radius: 22px 22px 16px 16px; }
+      .title-cloud-status { position: static; margin-bottom: 16px; }
+
+      .latest-event-toast {
+        top: auto;
+        bottom: calc(78px + env(safe-area-inset-bottom));
+        width: calc(100vw - 24px);
+        gap: 9px;
+        padding: 11px 13px;
+        border-radius: 15px;
+        box-shadow: 0 13px 34px rgba(0, 0, 0, .36), 0 0 22px var(--event-glow);
+      }
+      .latest-event-icon { width: 35px; height: 35px; font-size: 1.15rem; }
+      .latest-event-label { font-size: .59rem; }
+      .latest-event-message { display: -webkit-box; overflow: hidden; font-size: .82rem; line-height: 1.3; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
+      #toastArea { top: calc(50px + env(safe-area-inset-top)); right: 8px; }
+      .toast { max-width: calc(100vw - 16px); font-size: .78rem; }
+      .sound-text { font-size: clamp(1.7rem, 12vw, 3rem); }
     }
 
     @media (prefers-reduced-motion: reduce) {
@@ -1111,13 +1359,23 @@
           <span class="status-dot"></span><span data-connection-text>Bağlanıyor...</span>
         </div>
         <button id="themeBtn" class="icon-btn" aria-label="Temayı değiştir" title="Temayı değiştir">☀️</button>
+        <button id="oneHandBtn" class="icon-btn one-hand-toggle" type="button" aria-label="Tek elle oynama modunu değiştir" aria-pressed="true" title="Tek Elle Oynama Modu">☝️</button>
         <button id="restartBtn" class="icon-btn" title="Yeniden başlat">↻ <span>Yenile</span></button>
       </div>
     </header>
 
-    <div class="game-grid">
+    <button id="mobileLatestEventCard" class="mobile-latest-event-card" type="button" aria-label="Son olayı aç" aria-live="polite" aria-atomic="true">
+      <span id="mobileLatestEventIcon" class="mobile-latest-icon" aria-hidden="true">📣</span>
+      <span class="mobile-latest-copy">
+        <span class="mobile-latest-label">Son Olay</span>
+        <span id="mobileLatestEventMessage" class="mobile-latest-message">Krallık henüz sessiz. Bu durum şüpheli.</span>
+      </span>
+      <span class="mobile-latest-arrow" aria-hidden="true">›</span>
+    </button>
+
+    <div id="gameGrid" class="game-grid">
       <aside class="left-column">
-        <section class="panel character-card">
+        <section class="panel character-card" data-mobile-tab-panel="play">
           <div class="avatar-wrap"><span id="avatar">🥱</span></div>
           <div>
             <span id="moodTag" class="mood-tag">Aşırı Sıkılmış</span>
@@ -1129,25 +1387,25 @@
         </section>
 
         <section class="panel stats-panel" aria-label="Oyuncu istatistikleri">
-          <div class="stat">
+          <div class="stat" data-mobile-icon="🥱">
             <div class="stat-label"><span>🥱 Can Sıkıntısı</span><span id="boredomValue">100</span></div>
             <div class="bar"><div id="boredomBar" class="bar-fill bar-boredom"></div></div>
           </div>
-          <div class="stat">
+          <div class="stat" data-mobile-icon="⚡">
             <div class="stat-label"><span>⚡ Enerji</span><span id="energyValue">50</span></div>
             <div class="bar"><div id="energyBar" class="bar-fill bar-energy"></div></div>
           </div>
-          <div class="stat">
+          <div class="stat" data-mobile-icon="🔥">
             <div class="stat-label"><span>🔥 Kaos</span><span id="chaosValue">0</span></div>
             <div class="bar"><div id="chaosBar" class="bar-fill bar-chaos"></div></div>
           </div>
-          <div class="stat">
+          <div class="stat" data-mobile-icon="🪙">
             <div class="stat-label"><span>🪙 Para</span><span id="moneyValue">10</span></div>
             <div class="bar"><div id="moneyBar" class="bar-fill bar-money"></div></div>
           </div>
         </section>
 
-        <section class="panel challenge-card">
+        <section class="panel challenge-card" data-mobile-tab-panel="quests">
           <span class="section-kicker">Bugünün 3 Garip Görevi</span>
           <h3>Günlük Macera Listesi</h3>
           <p>Aynı gün aynı görevler. Her tamamlanan görev final skoruna +250 puan.</p>
@@ -1157,7 +1415,7 @@
       </aside>
 
       <section class="center-column">
-        <section class="panel actions-panel">
+        <section class="panel actions-panel" data-mobile-tab-panel="play">
           <span class="section-kicker">Büyülü Oda Faaliyetleri</span>
           <h2>Şimdi hangi kötü fikri deneyelim?</h2>
           <div class="action-grid">
@@ -1170,28 +1428,37 @@
           </div>
         </section>
 
-        <section class="panel mini-panel">
+        <section class="panel mini-panel" data-mobile-tab-panel="play">
           <div class="mini-grid">
             <button id="reflexBtn" class="mini-btn">🎯<br>10 Saniye Refleks</button>
             <button id="memoryBtn" class="mini-btn">🧠<br>Emoji Hafızası</button>
             <button id="diceBtn" class="mini-btn">🎲<br>Kaos Zarı</button>
           </div>
         </section>
+
+        <section class="panel mobile-shop-panel" data-mobile-tab-panel="market">
+          <div class="mobile-shop-head">
+            <h3>🛒 Gereksiz Market</h3>
+            <span id="mobileShopBalance" class="mobile-shop-balance">10 🪙</span>
+          </div>
+          <p>Aynı tuhaf dükkân, artık başparmağının hemen altında.</p>
+          <div id="mobileShopGrid" class="shop-grid"></div>
+        </section>
       </section>
 
       <aside class="right-column">
-        <section class="panel log-panel">
+        <section class="panel log-panel" data-mobile-tab-panel="log">
           <h3>📜 Krallık Günlüğü</h3>
           <div id="eventLog" aria-live="polite"></div>
         </section>
 
-        <section class="panel achievement-panel">
+        <section class="panel achievement-panel" data-mobile-tab-panel="quests">
           <h3>🏆 Başarımlar</h3>
           <div id="achievementSummary" class="achievement-summary">0 / 27 açıldı</div>
           <div id="achievementList"></div>
         </section>
 
-        <section class="panel leaderboard-panel">
+        <section class="panel leaderboard-panel" data-mobile-tab-panel="score">
           <div class="leaderboard-header">
             <h3>☁️ Liderlik Tablosu</h3>
             <button id="refreshLeaderboardBtn" class="refresh-board-btn" type="button">Yenile</button>
@@ -1209,6 +1476,14 @@
       </aside>
     </div>
   </main>
+
+  <nav class="mobile-bottom-nav" role="tablist" aria-label="Oyun bölümleri">
+    <button class="mobile-tab-btn active" type="button" role="tab" aria-selected="true" data-mobile-tab-button="play"><span aria-hidden="true">🎮</span>Oyna</button>
+    <button class="mobile-tab-btn" type="button" role="tab" aria-selected="false" data-mobile-tab-button="log"><span aria-hidden="true">📜</span>Günlük</button>
+    <button class="mobile-tab-btn" type="button" role="tab" aria-selected="false" data-mobile-tab-button="market"><span aria-hidden="true">🛒</span>Market</button>
+    <button class="mobile-tab-btn" type="button" role="tab" aria-selected="false" data-mobile-tab-button="quests"><span aria-hidden="true">📌</span>Görev</button>
+    <button class="mobile-tab-btn" type="button" role="tab" aria-selected="false" data-mobile-tab-button="score"><span aria-hidden="true">🏆</span>Skor</button>
+  </nav>
 
   <!-- Reusable modal -->
   <div id="modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
@@ -1288,6 +1563,9 @@
     let modalLocked = false;
     let activeLeaderboardTab = 'all';
     let latestEventToastTimer = null;
+    let hapticFeedbackTimer = null;
+    let lastHapticButton = null;
+    const mobileLayoutQuery = window.matchMedia('(max-width: 767px)');
 
     const characterDefs = {
       student: {
@@ -1434,6 +1712,8 @@
     let unlocked = loadJSON('csk-achievements', []);
     const savedTheme = localStorage.getItem('csk-theme') || 'dark';
     document.body.classList.toggle('light', savedTheme === 'light');
+    const savedOneHandMode = localStorage.getItem('csk-one-hand-mode');
+    document.body.classList.toggle('one-hand-mode', savedOneHandMode !== 'off');
 
     function loadJSON(key, fallback) {
       try { return JSON.parse(localStorage.getItem(key)) || fallback; }
@@ -1480,11 +1760,14 @@
 
     function init() {
       $('#themeBtn').textContent = document.body.classList.contains('light') ? '🌙' : '☀️';
+      updateOneHandButton();
       $('#playerNameInput').value = normalizePlayerName(localStorage.getItem('csk-player-name') || 'Misafir');
       selectCharacter(localStorage.getItem('csk-character') || 'student');
       createDailyQuests();
       renderAchievements();
+      renderMobileShop();
       bindEvents();
+      switchMobileTab('play');
       updateUI();
       testSupabaseConnection();
     }
@@ -1495,7 +1778,8 @@
       $('#playAgainBtn').addEventListener('click', restartGame);
       $('#challengeFriendBtn').addEventListener('click', copyChallengeMessage);
       $('#themeBtn').addEventListener('click', toggleTheme);
-      $('#shopOpenBtn').addEventListener('click', openShop);
+      $('#oneHandBtn').addEventListener('click', toggleOneHandMode);
+      $('#shopOpenBtn').addEventListener('click', handleShopOpen);
       $('#reflexBtn').addEventListener('click', startReflexGame);
       $('#memoryBtn').addEventListener('click', startMemoryGame);
       $('#diceBtn').addEventListener('click', openDiceGame);
@@ -1507,6 +1791,68 @@
       document.addEventListener('keydown', (event) => { if (event.key === 'Escape') closeModal(); });
       $('#playerNameInput').addEventListener('keydown', (event) => { if (event.key === 'Enter') startGame(); });
       $$('.action-btn[data-action]').forEach((button) => button.addEventListener('click', () => performAction(button.dataset.action)));
+      $$('[data-mobile-tab-button]').forEach((button) => button.addEventListener('click', () => switchMobileTab(button.dataset.mobileTabButton, true)));
+      $('#mobileLatestEventCard').addEventListener('click', () => switchMobileTab('log', true));
+      $('#mobileShopGrid').addEventListener('click', (event) => {
+        const button = event.target.closest('[data-buy]');
+        if (button) buyItem(button.dataset.buy);
+      });
+      document.addEventListener('pointerdown', playHapticVisual, { passive: true });
+    }
+
+    function updateOneHandButton() {
+      const enabled = document.body.classList.contains('one-hand-mode');
+      const button = $('#oneHandBtn');
+      button.setAttribute('aria-pressed', String(enabled));
+      button.title = enabled ? 'Tek Elle Oynama Modu: Açık' : 'Tek Elle Oynama Modu: Kapalı';
+    }
+
+    function toggleOneHandMode() {
+      const enabled = document.body.classList.toggle('one-hand-mode');
+      localStorage.setItem('csk-one-hand-mode', enabled ? 'on' : 'off');
+      updateOneHandButton();
+      if (mobileLayoutQuery.matches) {
+        switchMobileTab('play');
+        toast(enabled ? '☝️ Tek elle oynama modu açık' : '👐 Standart mobil düzen açık');
+      }
+    }
+
+    function playHapticVisual(event) {
+      if (!mobileLayoutQuery.matches || !document.body.classList.contains('game-active')) return;
+      const button = event.target.closest('button');
+      if (!button || button.disabled) return;
+
+      clearTimeout(hapticFeedbackTimer);
+      if (lastHapticButton) lastHapticButton.classList.remove('haptic-tap');
+      document.body.classList.remove('haptic-pulse');
+      document.body.style.setProperty('--tap-x', `${event.clientX}px`);
+      document.body.style.setProperty('--tap-y', `${event.clientY}px`);
+      void button.offsetWidth;
+      button.classList.add('haptic-tap');
+      document.body.classList.add('haptic-pulse');
+      lastHapticButton = button;
+      hapticFeedbackTimer = setTimeout(() => {
+        button.classList.remove('haptic-tap');
+        document.body.classList.remove('haptic-pulse');
+        if (lastHapticButton === button) lastHapticButton = null;
+      }, 400);
+    }
+
+    function switchMobileTab(tab, focusButton = false) {
+      const allowedTabs = ['play', 'log', 'market', 'quests', 'score'];
+      const nextTab = allowedTabs.includes(tab) ? tab : 'play';
+      document.body.dataset.mobileTab = nextTab;
+
+      $$('[data-mobile-tab-button]').forEach((button) => {
+        const active = button.dataset.mobileTabButton === nextTab;
+        button.classList.toggle('active', active);
+        button.setAttribute('aria-selected', String(active));
+        button.tabIndex = active ? 0 : -1;
+        if (active && focusButton) button.focus({ preventScroll: true });
+      });
+
+      if (nextTab === 'market') renderMobileShop();
+      if (mobileLayoutQuery.matches) $('#gameGrid').scrollTo({ top: 0, behavior: 'smooth' });
     }
 
     function startGame() {
@@ -1516,6 +1862,8 @@
       localStorage.setItem('csk-player-name', state.playerName);
       localStorage.setItem('csk-character', state.characterId);
       state.started = true;
+      document.body.classList.add('game-active');
+      switchMobileTab('play');
       $('#titleScreen').classList.add('hidden');
       $('#gameScreen').classList.remove('hidden');
       addLog(`<strong>${characterDefs[state.characterId].name} göreve hazır!</strong> Buzdolabı uzaktan ters ters bakıyor.`, 'good');
@@ -1531,6 +1879,8 @@
       state.playerName = currentPlayerName;
       state.characterId = currentCharacterId;
       state.started = true;
+      document.body.classList.add('game-active');
+      switchMobileTab('play');
       $('#playerNameDisplay').textContent = state.playerName;
       $('#titleScreen').classList.add('hidden');
       $('#gameScreen').classList.remove('hidden');
@@ -1888,7 +2238,8 @@
         $(`#${name}Bar`).style.width = `${name === 'money' ? clamp(value, 0, 100) : value}%`;
       });
       updateMood();
-      if (!$('#modal').classList.contains('hidden') && $('#shopGrid')) updateShopButtons();
+      $('#mobileShopBalance').textContent = `${Math.round(state.money)} 🪙`;
+      updateShopButtons();
     }
 
     function updateMood() {
@@ -1933,11 +2284,15 @@
       const toastElement = $('#latestEventToast');
       const type = inferEventType(message, tone);
       const icons = { default: '📣', good: '✨', bad: '⚠️', chaos: '🌀', money: '🪙', achievement: '🏆' };
+      const mobileCard = $('#mobileLatestEventCard');
 
       clearTimeout(latestEventToastTimer);
       toastElement.className = `latest-event-toast ${type}`;
       toastElement.querySelector('.latest-event-icon').textContent = icons[type] || icons.default;
       toastElement.querySelector('.latest-event-message').innerHTML = message;
+      mobileCard.className = `mobile-latest-event-card ${type}`;
+      $('#mobileLatestEventIcon').textContent = icons[type] || icons.default;
+      $('#mobileLatestEventMessage').innerHTML = message;
 
       /* Restart both animations when a newer event replaces the current one. */
       void toastElement.offsetWidth;
@@ -1965,16 +2320,37 @@
     }
 
     /* Shop */
-    function openShop() {
-      state.counters.actions++;
-      const cards = shopItems.map((item) => `
+    function shopCardsMarkup() {
+      return shopItems.map((item) => `
         <article class="shop-item">
           <span class="shop-emoji">${item.emoji}</span>
           <div><h4>${item.name}</h4><p>${item.desc}</p>
           <button class="shop-btn" data-buy="${item.id}">${item.price} 🪙 — Satın Al</button></div>
         </article>`).join('');
-      openModal(`<h2 id="modalTitle">🛒 Gereksiz Eşya Dükkânı</h2><p>Satıcı bir pelerin giymiş ama altında pijaması var.</p><div id="shopGrid" class="shop-grid">${cards}</div>`);
-      $$('[data-buy]').forEach((button) => button.addEventListener('click', () => buyItem(button.dataset.buy)));
+    }
+
+    function renderMobileShop() {
+      const grid = $('#mobileShopGrid');
+      if (!grid) return;
+      grid.innerHTML = shopCardsMarkup();
+      updateShopButtons();
+    }
+
+    function handleShopOpen() {
+      if (mobileLayoutQuery.matches) {
+        state.counters.actions++;
+        switchMobileTab('market');
+        updateDailyQuests();
+        checkAchievements();
+        return;
+      }
+      openShop();
+    }
+
+    function openShop() {
+      state.counters.actions++;
+      openModal(`<h2 id="modalTitle">🛒 Gereksiz Eşya Dükkânı</h2><p>Satıcı bir pelerin giymiş ama altında pijaması var.</p><div id="shopGrid" class="shop-grid">${shopCardsMarkup()}</div>`);
+      $$('#shopGrid [data-buy]').forEach((button) => button.addEventListener('click', () => buyItem(button.dataset.buy)));
       updateShopButtons();
       updateDailyQuests();
       checkAchievements();
@@ -1995,6 +2371,7 @@
     function updateShopButtons() {
       $$('[data-buy]').forEach((button) => {
         const item = shopItems.find((candidate) => candidate.id === button.dataset.buy);
+        if (!item) return;
         const owned = state.inventory.includes(item.id);
         button.disabled = owned || state.money < item.price;
         button.textContent = owned ? '✓ Çantada' : `${item.price} 🪙 — Satın Al`;
@@ -2219,6 +2596,7 @@
       state.boss.round = 0;
       state.boss.power = 0;
       state.boss.scoreBonus = 0;
+      if (mobileLayoutQuery.matches) switchMobileTab('play');
       addLog('<strong>BOSS!</strong> Büyük Can Sıkıntısı Ejderi tavandan dramatik biçimde indi.', 'bad');
       soundText('ROAAAR!');
       screenShake();
