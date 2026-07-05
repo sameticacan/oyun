@@ -49,3 +49,18 @@ export const manualObservationSchema = z.object({
   cancellationPolicy: z.string().trim().max(500).optional().default("Belirtilmedi"),
   availabilityText: z.string().trim().max(300).optional().default("Manuel olarak müsait işaretlendi"),
 });
+
+const optionalCaptureText = (maxLength: number) => z.string().trim().max(maxLength).optional().transform((value) => value || undefined);
+
+export const captureObservationSchema = z.object({
+  competitorId: z.string().cuid(),
+  profileId: z.string().cuid(),
+  priceAmount: z.coerce.number().positive().max(10_000_000),
+  currency: z.string().trim().length(3).transform((value) => value.toUpperCase()),
+  roomName: optionalCaptureText(200),
+  boardType: optionalCaptureText(120),
+  cancellationPolicy: optionalCaptureText(500),
+  availabilityText: optionalCaptureText(300),
+  sourceUrl: z.union([z.string().url(), z.literal("")]).optional().transform((value) => value || undefined),
+  rawSnapshotText: z.string().trim().min(1).max(200_000),
+});

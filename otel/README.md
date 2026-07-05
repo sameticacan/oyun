@@ -86,6 +86,19 @@ OdaRadar, Hotels URL'sinde tarih parametresi bulunmadığında profilin giriş t
 
 Public kontrol yalnızca otomasyona izin veren, herkese açık sayfalarda kullanılmalıdır. CAPTCHA çözülmez; login, üyelik, paywall veya üye fiyatına erişilmez; proxy/stealth tekniği kullanılmaz. HTTP 401, 403, 429, bot kontrolü veya doğrulama ekranında işlem `blocked` olarak kaydedilip durdurulur. Site şartlarını ve robots kurallarını değerlendirmek kullanıcı sorumluluğundadır.
 
+## Tarayıcıdan Fiyat Yakala
+
+Otomatik public kontrol engellenirse veya fiyat bilgisi tarayıcı oturumunda tutuluyorsa **Fiyat Yakala** sayfasıyla yalnızca kendi tarayıcınızda gördüğünüz metni işleyebilirsiniz:
+
+1. ETS, Hotels veya benzeri sayfayı kendi Chrome tarayıcınızda açın.
+2. Konaklama tarihlerini ve kişi sayısını seçip fiyatın görünmesini bekleyin.
+3. Fiyat görünürken `Ctrl+A`, ardından `Ctrl+C` ile görünür sayfa metnini kopyalayın.
+4. OdaRadar menüsünden **Fiyat Yakala** sayfasını açıp metni yapıştırın.
+5. **Metni ayrıştır** düğmesine basın; önerilen fiyatı, tüm adayları ve oda/pansiyon bilgilerini kontrol edin.
+6. Gerekirse fiyatı veya diğer alanları elle düzeltip **Gözlem olarak kaydet** düğmesine basın.
+
+Bu akış üçüncü taraf siteye OdaRadar üzerinden istek göndermez. Yapıştırılan görünür metin yerel olarak ayrıştırılır ve yalnızca kullanıcı kaydettiğinde `manual` kaynaklı gözlem olarak OdaRadar'a gönderilir. CAPTCHA, login veya erişim kontrolü aşılmaz.
+
 ## Sık kullanılan komutlar
 
 ```powershell
@@ -111,6 +124,7 @@ npm run scrape:demo     # Yeni demo gözlemleri ekle
 - Rakip otel CRUD işlemleri
 - Arama profili CRUD ve rakip ilişkilendirme
 - Manuel rakip fiyatı ve kendi otel fiyatı girişi
+- Tarayıcıda görülen metinden düzenlenebilir manuel fiyat yakalama
 - Filtrelenebilir, bağlamı tam fiyat gözlemleri
 - 30 günlük pazar ortalaması / kendi fiyatımız / en ucuz rakip grafiği
 - Audit edilebilir scrape run kayıtları
@@ -136,6 +150,7 @@ MVP'de arka plan işi yoktur. Dashboard'daki **Demo kontrolü çalıştır** vey
 - `PUT /api/profiles/:id`, `DELETE /api/profiles/:id`
 - `GET /api/observations?competitorId=&profileId=&status=&limit=`
 - `POST /api/observations` (manuel rakip fiyatı)
+- `POST /api/observations/capture` (tarayıcıdan yapıştırılan görünür metin)
 - `POST /api/own-prices`
 - `POST /api/scrape/demo`
 - `POST /api/scrape/public` (body: isteğe bağlı `profileId`)

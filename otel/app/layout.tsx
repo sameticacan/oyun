@@ -6,7 +6,7 @@ export const metadata: Metadata = { title: "OdaRadar", description: "Butik otell
 
 const navigation = [
   ["Genel Bakış", "/", "⌁"], ["Rakip Oteller", "/competitors", "▦"], ["Fiyat Gözlemleri", "/observations", "◫"],
-  ["Arama Profilleri", "/profiles", "◎"], ["Ayarlar ve Güvenlik", "/settings", "⚙"],
+  ["Fiyat Yakala", "/capture", "⊕"], ["Arama Profilleri", "/profiles", "◎"], ["Ayarlar ve Güvenlik", "/settings", "⚙"],
 ] as const;
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {

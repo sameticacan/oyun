@@ -27,18 +27,18 @@ export function DashboardActions({ profileId, currency }: { profileId: string; c
       const response = await fetch("/api/scrape/public", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ profileId }) });
       const data = await response.json().catch(() => ({}));
       if (!response.ok) {
-        setMessage(data.error ?? "Public fiyat kontrolü başlatılamadı.");
+        setMessage(data.error === "Public kontroller .env içinde kapalı" ? data.error : "Otomatik okuma yapılamadı. Fiyat Yakala sayfasıyla gördüğünüz fiyatı kaydedebilirsiniz.");
         return;
       }
       const unavailable = Math.max(0, Number(data.requested ?? 0) - Number(data.succeeded ?? 0) - Number(data.blocked ?? 0) - Number(data.failed ?? 0));
       if (data.requested === 0) setMessage("Bu profile bağlı aktif bir ETS placeholder rakibi yok.");
-      else if (data.status === "blocked") setMessage(`Kontrol durduruldu: ${data.blocked}/${data.requested} public sayfa erişimi engelledi veya doğrulama istedi.`);
+      else if (data.status === "blocked") setMessage("Otomatik okuma yapılamadı. Fiyat Yakala sayfasıyla gördüğünüz fiyatı kaydedebilirsiniz.");
       else if (unavailable > 0) setMessage("Sayfa açıldı ama fiyat görünmedi. Tarih seçme ekranı veya belirsiz fiyat olabilir. Fiyat görünen tam URL’yi kaydedin.");
-      else if (data.failed > 0) setMessage(`${data.succeeded}/${data.requested} fiyat okundu; ${data.failed} kontrolde hata oluştu.`);
+      else if (data.failed > 0) setMessage("Otomatik okuma yapılamadı. Fiyat Yakala sayfasıyla gördüğünüz fiyatı kaydedebilirsiniz.");
       else setMessage(`${data.succeeded}/${data.requested} public fiyat güncellendi.`);
       router.refresh();
     } catch {
-      setMessage("Public fiyat kontrolünde sunucuya ulaşılamadı. Lütfen bağlantınızı kontrol edip tekrar deneyin.");
+      setMessage("Otomatik okuma yapılamadı. Fiyat Yakala sayfasıyla gördüğünüz fiyatı kaydedebilirsiniz.");
     } finally {
       setRunning(null);
     }
