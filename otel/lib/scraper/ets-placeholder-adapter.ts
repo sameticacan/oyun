@@ -1,9 +1,12 @@
 import { mkdir } from "node:fs/promises";
 import path from "node:path";
 import type { Browser, BrowserContext, Page } from "playwright";
+import { addDays } from "@/lib/utils";
 import type { AdapterObservation, PriceSourceAdapter, ScrapeContext } from "./types";
 
 const blockedSignals = /captcha|robot değilim|access denied|erişim engellendi|unusual traffic|giriş yap|login|üye girişi|cloudflare|doğrulama/i;
+const dateSelectionSignals = /tarih seç|giriş tarihi|çıkış tarihi|check-in|check-out|konaklama tarihi|tarihleri seçin/i;
+const hotelsDateScreenMessage = "Sayfa fiyat yerine tarih seçme ekranı gösterdi. Hotels üzerinde tarih ve kişi seçip fiyat görünen tam URL’yi Public URL alanına kaydedin.";
 const contextualWords: Array<[RegExp, number]> = [
   [/toplam/i, 4],
   [/başlayan/i, 3],
@@ -16,6 +19,23 @@ type Closeable = { close(): Promise<void> };
 
 function shortText(value: string, maxLength: number) {
   return value.replace(/\s+/g, " ").trim().slice(0, maxLength);
+}
+
+function addHotelsProfileParameters(publicUrl: string, profile: ScrapeContext["profile"]) {
+  try {
+    const url = new URL(publicUrl);
+    const hostname = url.hostname.toLowerCase();
+    const isHotels = hostname === "hotels.com" || hostname.endsWith(".hotels.com");
+    const dateParameters = ["chkin", "chkout", "checkin", "checkout", "checkInDate", "checkOutDate"];
+    if (!isHotels || dateParameters.some((name) => url.searchParams.has(name))) return { url: publicUrl, parametersAdded: false };
+
+    url.searchParams.set("chkin", profile.checkIn.toISOString().slice(0, 10));
+    url.searchParams.set("chkout", addDays(profile.checkIn, profile.nights).toISOString().slice(0, 10));
+    url.searchParams.set("rm1", `a${profile.adults}`);
+    return { url: url.toString(), parametersAdded: true };
+  } catch {
+    return { url: publicUrl, parametersAdded: false };
+  }
 }
 
 function parseAmount(value: string) {
@@ -89,6 +109,9 @@ export class EtsPlaceholderAdapter implements PriceSourceAdapter {
     let browser: Browser | undefined;
     let context: BrowserContext | undefined;
     let page: Page | undefined;
+    let bodyText = "";
+    let enhancedHotelsNavigationStarted = false;
+    const target = addHotelsProfileParameters(competitor.publicUrl, profile);
 
     try {
       const { chromium } = await import("playwright");
@@ -100,19 +123,24 @@ export class EtsPlaceholderAdapter implements PriceSourceAdapter {
       page = await context.newPage();
       await page.waitForTimeout(2_000);
 
-      const response = await page.goto(competitor.publicUrl, {
+      enhancedHotelsNavigationStarted = target.parametersAdded;
+      const response = await page.goto(target.url, {
         waitUntil: "domcontentloaded",
         timeout: Number(process.env.SCRAPER_NAVIGATION_TIMEOUT_MS ?? 30_000),
       });
       await page.waitForTimeout(1_000);
-      const bodyText = await page.locator("body").innerText({ timeout: 5_000 });
+      bodyText = await page.locator("body").innerText({ timeout: 5_000 });
+      enhancedHotelsNavigationStarted = false;
       const statusCode = response?.status();
 
       if (statusCode === 401 || statusCode === 403 || statusCode === 429 || blockedSignals.test(bodyText)) {
-        return [{ status: "blocked", currency: profile.currency, sourceUrl: competitor.publicUrl, errorMessage: `Kaynak erişimi engelledi veya insan doğrulaması istedi${statusCode ? ` (HTTP ${statusCode})` : ""}. Kontrol durduruldu.` }];
+        return [{ status: "blocked", currency: profile.currency, sourceUrl: target.url, errorMessage: `Kaynak erişimi engelledi veya insan doğrulaması istedi${statusCode ? ` (HTTP ${statusCode})` : ""}. Kontrol durduruldu.` }];
       }
       if (!response || (statusCode !== undefined && statusCode >= 400)) {
-        return [{ status: "error", currency: profile.currency, sourceUrl: competitor.publicUrl, errorMessage: response ? `Public sayfa HTTP ${statusCode} yanıtı verdi.` : "Public sayfadan HTTP yanıtı alınamadı." }];
+        if (target.parametersAdded) {
+          return [{ status: "unavailable", currency: profile.currency, sourceUrl: target.url, availabilityText: hotelsDateScreenMessage, rawSnapshotText: bodyText.slice(0, 1_000) }];
+        }
+        return [{ status: "error", currency: profile.currency, sourceUrl: target.url, errorMessage: response ? `Public sayfa HTTP ${statusCode} yanıtı verdi.` : "Public sayfadan HTTP yanıtı alınamadı." }];
       }
 
       if (process.env.DEBUG_SCRAPER === "true") {
@@ -121,28 +149,37 @@ export class EtsPlaceholderAdapter implements PriceSourceAdapter {
         await page.screenshot({ path: path.join(dir, `${competitor.id}-${Date.now()}.png`), fullPage: true });
       }
 
+      const priceText = await selectorText(page, competitor.priceSelector, "Fiyat", 500);
+      const genericCandidate = competitor.priceSelector ? undefined : selectGenericPrice(bodyText);
+      const priceAmount = priceText ? selectPriceFromSelector(priceText) : genericCandidate?.amount;
+      const showsDateSelection = dateSelectionSignals.test(bodyText);
+
+      if (priceAmount === undefined && showsDateSelection) {
+        return [{ status: "unavailable", currency: "TRY", sourceUrl: target.url, availabilityText: hotelsDateScreenMessage, rawSnapshotText: bodyText.slice(0, 1_000) }];
+      }
+
       const roomName = await selectorText(page, competitor.roomSelector, "Oda adı", 200) ?? "Public sayfa";
       const boardType = await selectorText(page, competitor.boardSelector, "Pansiyon", 120) ?? (profile.boardPreference === "breakfast_included" ? "Kahvaltı dahil" : "Sadece oda");
       const cancellationPolicy = await selectorText(page, competitor.cancellationSelector, "İptal koşulu", 500);
       const availabilityText = await selectorText(page, competitor.availabilitySelector, "Müsaitlik", 300) ?? "Public sayfadan okundu";
-      const priceText = await selectorText(page, competitor.priceSelector, "Fiyat", 500);
-      const genericCandidate = competitor.priceSelector ? undefined : selectGenericPrice(bodyText);
-      const priceAmount = priceText ? selectPriceFromSelector(priceText) : genericCandidate?.amount;
 
       if (priceAmount === undefined) {
         const reason = competitor.priceSelector
           ? "Fiyat selector alanında geçerli bir fiyat bulunamadı."
           : "Görünür metindeki fiyat adayları güvenilir biçimde ayırt edilemedi.";
-        return [{ status: "unavailable", currency: "TRY", sourceUrl: competitor.publicUrl, roomName, boardType, cancellationPolicy, availabilityText: reason, rawSnapshotText: shortText(bodyText, 1_000) }];
+        return [{ status: "unavailable", currency: "TRY", sourceUrl: target.url, roomName, boardType, cancellationPolicy, availabilityText: reason, rawSnapshotText: shortText(bodyText, 1_000) }];
       }
 
       const rawSnapshotText = priceText
         ? `Public fiyat selector metninden TRY ${priceAmount} okundu: ${shortText(priceText, 200)}`
         : `Public görünür metninden TRY ${priceAmount} okundu. Bağlam: ${genericCandidate?.context ?? "tek fiyat adayı"}`;
-      return [{ status: "success", currency: "TRY", sourceUrl: competitor.publicUrl, roomName, boardType, cancellationPolicy, availabilityText, priceAmount, rawSnapshotText: shortText(rawSnapshotText, 500) }];
+      return [{ status: "success", currency: "TRY", sourceUrl: target.url, roomName, boardType, cancellationPolicy, availabilityText, priceAmount, rawSnapshotText: shortText(rawSnapshotText, 500) }];
     } catch (error) {
+      if (enhancedHotelsNavigationStarted) {
+        return [{ status: "unavailable", currency: profile.currency, sourceUrl: target.url, availabilityText: hotelsDateScreenMessage, rawSnapshotText: bodyText.slice(0, 1_000) }];
+      }
       const detail = error instanceof Error ? shortText(error.message, 300) : "Bilinmeyen tarayıcı hatası";
-      return [{ status: "error", currency: profile.currency, sourceUrl: competitor.publicUrl, errorMessage: `Public sayfa okunurken hata oluştu: ${detail}` }];
+      return [{ status: "error", currency: profile.currency, sourceUrl: target.url, errorMessage: `Public sayfa okunurken hata oluştu: ${detail}` }];
     } finally {
       await closeQuietly(page);
       await closeQuietly(context);

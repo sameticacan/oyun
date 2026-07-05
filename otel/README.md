@@ -78,6 +78,12 @@ Rakip ekleme/düzenleme formundaki gelişmiş alanlara tarayıcı geliştirici a
 - Birden fazla generic fiyat güvenilir biçimde ayırt edilemezse fiyat tahmin edilmez; gözlem `unavailable` olarak kaydedilir.
 - Selector alanına yalnızca CSS selector yazın; JavaScript çalıştırılmaz.
 
+### Hotels.com tarih seçimi notu
+
+Hotels.com bazı durumlarda seçilen tarih ve kişi bilgisini URL yerine tarayıcı oturumunda saklayabilir. Bu nedenle rakibin **Public URL** alanına, tarih ve kişi seçildikten sonra fiyatın görünür olduğu tam URL'yi kaydedin. Linki gizli sekmede açtığınızda fiyat yerine tarih seçme ekranı görünüyorsa OdaRadar bu fiyatı otomatik okuyamaz ve gözlemi `unavailable` olarak kaydeder.
+
+OdaRadar, Hotels URL'sinde tarih parametresi bulunmadığında profilin giriş tarihi, gece sayısı ve yetişkin sayısıyla yaygın public sorgu parametrelerini bir kez eklemeyi dener. Sayfaya tıklamaz, tarih modalıyla etkileşime girmez ve oturum/erişim kontrolünü aşmaz.
+
 Public kontrol yalnızca otomasyona izin veren, herkese açık sayfalarda kullanılmalıdır. CAPTCHA çözülmez; login, üyelik, paywall veya üye fiyatına erişilmez; proxy/stealth tekniği kullanılmaz. HTTP 401, 403, 429, bot kontrolü veya doğrulama ekranında işlem `blocked` olarak kaydedilip durdurulur. Site şartlarını ve robots kurallarını değerlendirmek kullanıcı sorumluluğundadır.
 
 ## Sık kullanılan komutlar

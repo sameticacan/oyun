@@ -30,8 +30,10 @@ export function DashboardActions({ profileId, currency }: { profileId: string; c
         setMessage(data.error ?? "Public fiyat kontrolü başlatılamadı.");
         return;
       }
+      const unavailable = Math.max(0, Number(data.requested ?? 0) - Number(data.succeeded ?? 0) - Number(data.blocked ?? 0) - Number(data.failed ?? 0));
       if (data.requested === 0) setMessage("Bu profile bağlı aktif bir ETS placeholder rakibi yok.");
       else if (data.status === "blocked") setMessage(`Kontrol durduruldu: ${data.blocked}/${data.requested} public sayfa erişimi engelledi veya doğrulama istedi.`);
+      else if (unavailable > 0) setMessage("Sayfa açıldı ama fiyat görünmedi. Tarih seçme ekranı veya belirsiz fiyat olabilir. Fiyat görünen tam URL’yi kaydedin.");
       else if (data.failed > 0) setMessage(`${data.succeeded}/${data.requested} fiyat okundu; ${data.failed} kontrolde hata oluştu.`);
       else setMessage(`${data.succeeded}/${data.requested} public fiyat güncellendi.`);
       router.refresh();
