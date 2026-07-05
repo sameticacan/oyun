@@ -29,38 +29,43 @@ enum ScrapeRunStatus {
 }
 
 model Competitor {
-  id            String              @id @default(cuid())
-  name          String
-  city          String
-  district      String
-  source        CompetitorSource    @default(demo)
-  publicUrl     String?             @map("public_url")
-  active        Boolean             @default(true)
-  notes         String?
-  profiles      CompetitorProfile[]
-  observations  PriceObservation[]
-  createdAt     DateTime            @default(now()) @map("created_at")
-  updatedAt     DateTime            @updatedAt @map("updated_at")
+  id                   String              @id @default(cuid())
+  name                 String
+  city                 String
+  district             String
+  source               CompetitorSource    @default(demo)
+  publicUrl            String?             @map("public_url")
+  priceSelector        String?             @map("price_selector")
+  roomSelector         String?             @map("room_selector")
+  boardSelector        String?             @map("board_selector")
+  cancellationSelector String?             @map("cancellation_selector")
+  availabilitySelector String?             @map("availability_selector")
+  active               Boolean             @default(true)
+  notes                String?
+  profiles             CompetitorProfile[]
+  observations         PriceObservation[]
+  createdAt            DateTime            @default(now()) @map("created_at")
+  updatedAt            DateTime            @updatedAt @map("updated_at")
 
   @@index([active, source])
   @@map("competitors")
 }
 
 model SearchProfile {
-  id               String              @id @default(cuid())
-  name             String
-  checkIn          DateTime            @db.Date @map("check_in")
-  nights           Int
-  adults           Int
-  children         Int                 @default(0)
-  boardPreference  String              @map("board_preference")
-  currency         String              @default("TRY")
-  competitors      CompetitorProfile[]
-  observations     PriceObservation[]
-  ownPrices        OwnHotelPrice[]
-  scrapeRuns       ScrapeRun[]
-  createdAt        DateTime            @default(now()) @map("created_at")
-  updatedAt        DateTime            @updatedAt @map("updated_at")
+  id              String              @id @default(cuid())
+  name            String
+  checkIn         DateTime            @map("check_in") @db.Date
+  nights          Int
+  adults          Int
+  children        Int                 @default(0)
+  boardPreference String              @map("board_preference")
+  currency        String              @default("TRY")
+  competitors     CompetitorProfile[]
+  observations    PriceObservation[]
+  ownPrices       OwnHotelPrice[]
+  scrapeRuns      ScrapeRun[]
+  createdAt       DateTime            @default(now()) @map("created_at")
+  updatedAt       DateTime            @updatedAt @map("updated_at")
 
   @@map("search_profiles")
 }
@@ -77,30 +82,30 @@ model CompetitorProfile {
 }
 
 model PriceObservation {
-  id                  String            @id @default(cuid())
-  competitorId        String            @map("competitor_id")
-  profileId           String            @map("profile_id")
-  scrapeRunId         String?           @map("scrape_run_id")
-  source              CompetitorSource
-  sourceUrl           String?           @map("source_url")
-  roomName            String?           @map("room_name")
-  boardType           String?           @map("board_type")
-  cancellationPolicy  String?           @map("cancellation_policy")
-  availabilityText    String?           @map("availability_text")
-  priceAmount         Decimal?          @db.Decimal(12, 2) @map("price_amount")
-  currency            String            @default("TRY")
-  checkIn             DateTime          @db.Date @map("check_in")
-  checkOut            DateTime          @db.Date @map("check_out")
-  adults              Int
-  children            Int               @default(0)
-  observedAt          DateTime           @default(now()) @map("observed_at")
-  rawSnapshotText     String?            @db.Text @map("raw_snapshot_text")
-  status              ObservationStatus
-  errorMessage        String?            @db.Text @map("error_message")
-  competitor          Competitor         @relation(fields: [competitorId], references: [id], onDelete: Cascade)
-  profile             SearchProfile      @relation(fields: [profileId], references: [id], onDelete: Cascade)
-  scrapeRun           ScrapeRun?         @relation(fields: [scrapeRunId], references: [id], onDelete: SetNull)
-  createdAt           DateTime            @default(now()) @map("created_at")
+  id                 String            @id @default(cuid())
+  competitorId       String            @map("competitor_id")
+  profileId          String            @map("profile_id")
+  scrapeRunId        String?           @map("scrape_run_id")
+  source             CompetitorSource
+  sourceUrl          String?           @map("source_url")
+  roomName           String?           @map("room_name")
+  boardType          String?           @map("board_type")
+  cancellationPolicy String?           @map("cancellation_policy")
+  availabilityText   String?           @map("availability_text")
+  priceAmount        Decimal?          @map("price_amount") @db.Decimal(12, 2)
+  currency           String            @default("TRY")
+  checkIn            DateTime          @map("check_in") @db.Date
+  checkOut           DateTime          @map("check_out") @db.Date
+  adults             Int
+  children           Int               @default(0)
+  observedAt         DateTime          @default(now()) @map("observed_at")
+  rawSnapshotText    String?           @map("raw_snapshot_text") @db.Text
+  status             ObservationStatus
+  errorMessage       String?           @map("error_message") @db.Text
+  competitor         Competitor        @relation(fields: [competitorId], references: [id], onDelete: Cascade)
+  profile            SearchProfile     @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  scrapeRun          ScrapeRun?        @relation(fields: [scrapeRunId], references: [id], onDelete: SetNull)
+  createdAt          DateTime          @default(now()) @map("created_at")
 
   @@index([competitorId, profileId, observedAt])
   @@index([checkIn, status])
@@ -111,7 +116,7 @@ model OwnHotelPrice {
   id          String        @id @default(cuid())
   profileId   String        @map("profile_id")
   date        DateTime      @db.Date
-  priceAmount Decimal       @db.Decimal(12, 2) @map("price_amount")
+  priceAmount Decimal       @map("price_amount") @db.Decimal(12, 2)
   currency    String        @default("TRY")
   profile     SearchProfile @relation(fields: [profileId], references: [id], onDelete: Cascade)
   createdAt   DateTime      @default(now()) @map("created_at")
@@ -122,20 +127,20 @@ model OwnHotelPrice {
 }
 
 model ScrapeRun {
-  id            String           @id @default(cuid())
-  profileId     String?          @map("profile_id")
-  source        CompetitorSource
-  status        ScrapeRunStatus  @default(running)
-  startedAt     DateTime         @default(now()) @map("started_at")
-  finishedAt    DateTime?        @map("finished_at")
-  requested     Int              @default(0)
-  succeeded     Int              @default(0)
-  blocked       Int              @default(0)
-  failed        Int              @default(0)
-  errorMessage  String?          @db.Text @map("error_message")
-  profile       SearchProfile?   @relation(fields: [profileId], references: [id], onDelete: SetNull)
-  observations  PriceObservation[]
-  createdAt     DateTime         @default(now()) @map("created_at")
+  id           String             @id @default(cuid())
+  profileId    String?            @map("profile_id")
+  source       CompetitorSource
+  status       ScrapeRunStatus    @default(running)
+  startedAt    DateTime           @default(now()) @map("started_at")
+  finishedAt   DateTime?          @map("finished_at")
+  requested    Int                @default(0)
+  succeeded    Int                @default(0)
+  blocked      Int                @default(0)
+  failed       Int                @default(0)
+  errorMessage String?            @map("error_message") @db.Text
+  profile      SearchProfile?     @relation(fields: [profileId], references: [id], onDelete: SetNull)
+  observations PriceObservation[]
+  createdAt    DateTime           @default(now()) @map("created_at")
 
   @@index([startedAt])
   @@map("scrape_runs")

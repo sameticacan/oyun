@@ -40,7 +40,7 @@ npm run setup
 | Değişken | Varsayılan | Açıklama |
 |---|---:|---|
 | `DATABASE_URL` | Yerel PostgreSQL | Prisma bağlantısı |
-| `ENABLE_PUBLIC_PRICE_CHECKS` | `false` | Placeholder public sayfa kontrolünü açıkça etkinleştirir |
+| `ENABLE_PUBLIC_PRICE_CHECKS` | `false` | İzinli public sayfa kontrolünü açıkça etkinleştirir |
 | `DEBUG_SCRAPER` | `false` | Debug ekran görüntülerini `scraper-debug/` içine yazar |
 | `SCRAPER_MIN_INTERVAL_MS` | `60000` | Aynı public kaynağa minimum istek aralığı; kod 60 saniyeden aşağıya izin vermez |
 | `SCRAPER_MAX_CONCURRENCY` | `1` | Gelecek worker'lar için eşzamanlılık ayarı; MVP runner tek sayfayla seri çalışır |
@@ -48,6 +48,37 @@ npm run setup
 | `SCRAPER_USER_AGENT` | Açık OdaRadar kimliği | Kendisini tanıtan user-agent |
 
 > `AppSetting` tablosundaki `ENABLE_PUBLIC_PRICE_CHECKS` satırı yalnızca arayüz/audit amaçlıdır. Public erişim sadece `.env` içindeki değer tam olarak `true` olduğunda açılır.
+
+## Public fiyat kontrolünü açma
+
+Public kontrol varsayılan olarak kapalıdır ve yalnızca dashboard'daki manuel butonla çalışır. Otomatik veya zamanlanmış public tarama yapılmaz.
+
+1. Playwright Chromium tarayıcısını bir kez kurun:
+
+   ```powershell
+   npx playwright install chromium
+   ```
+
+2. `.env` dosyasında kontrolü açın ve uygulamayı yeniden başlatın:
+
+   ```dotenv
+   ENABLE_PUBLIC_PRICE_CHECKS=true
+   ```
+
+3. **Rakip Oteller** sayfasında kaynak olarak **ETS placeholder** seçin ve izinli, herkese açık otel sayfasının `https://` URL'sini girin.
+4. Rakibi ilgili arama profiline bağlayın.
+5. Dashboard'da profili seçip **Public fiyat kontrolü çalıştır** düğmesine basın.
+
+### CSS selector kullanımı
+
+Rakip ekleme/düzenleme formundaki gelişmiş alanlara tarayıcı geliştirici araçlarından doğruladığınız CSS selector'ları girebilirsiniz. Örneğin fiyat için `.total-price`, oda adı için `.room-name` kullanılabilir. Selector her zaman ilk görünür eşleşmenin metnini okur; sayfaya tıklamaz, form göndermez ve gizli içeriğe erişmez.
+
+- **Fiyat CSS selector** boş bırakılırsa görünür sayfa metnindeki `₺3.450`, `3.450 TL`, `3450 TL` ve `TRY 3450` biçimleri aranır.
+- Oda, pansiyon, iptal ve müsaitlik selector'ları isteğe bağlıdır.
+- Birden fazla generic fiyat güvenilir biçimde ayırt edilemezse fiyat tahmin edilmez; gözlem `unavailable` olarak kaydedilir.
+- Selector alanına yalnızca CSS selector yazın; JavaScript çalıştırılmaz.
+
+Public kontrol yalnızca otomasyona izin veren, herkese açık sayfalarda kullanılmalıdır. CAPTCHA çözülmez; login, üyelik, paywall veya üye fiyatına erişilmez; proxy/stealth tekniği kullanılmaz. HTTP 401, 403, 429, bot kontrolü veya doğrulama ekranında işlem `blocked` olarak kaydedilip durdurulur. Site şartlarını ve robots kurallarını değerlendirmek kullanıcı sorumluluğundadır.
 
 ## Sık kullanılan komutlar
 
@@ -77,7 +108,7 @@ npm run scrape:demo     # Yeni demo gözlemleri ekle
 - Filtrelenebilir, bağlamı tam fiyat gözlemleri
 - 30 günlük pazar ortalaması / kendi fiyatımız / en ucuz rakip grafiği
 - Audit edilebilir scrape run kayıtları
-- Demo, manuel ve güvenli ETS placeholder adaptörleri
+- Demo, manuel ve güvenli public sayfa adaptörleri
 - Hazır Docker Compose PostgreSQL servisi
 - Otomatik job çalıştırmayan gelecek cron mimarisi placeholder'ı
 
@@ -87,9 +118,9 @@ Adaptör sözleşmesi `lib/scraper/types.ts` içindedir. Runner her sonucu `succ
 
 - `DemoAdapter`: geliştirme için güne göre kararlı, gerçekçi sahte fiyat üretir.
 - `ManualAdapter`: ağ isteği yapmaz; manuel fiyatlar gözlem API'si üzerinden doğrudan saklanır.
-- `EtsPlaceholderAdapter`: fiyat ayrıştırmaz. Yalnızca ortam değişkeni açıkken public URL'yi yavaşça yükler; CAPTCHA, login, HTTP 401/403/429 veya engel sinyalinde hemen durur.
+- `EtsPlaceholderAdapter`: yalnızca ortam değişkeni açıkken public URL'yi yavaşça yükler. Kullanıcı tanımlı CSS selector'lardan veya görünür metindeki güvenilir TRY/TL adayından fiyat okur; CAPTCHA, login, Cloudflare/doğrulama, HTTP 401/403/429 veya başka bir engel sinyalinde hemen durur.
 
-MVP'de arka plan işi yoktur. Dashboard'daki **Demo kontrolü çalıştır** düğmesi veya `npm run scrape:demo` kullanılır. Gelecek cron giriş noktası `lib/scheduler/index.ts` dosyasında belgelenmiştir.
+MVP'de arka plan işi yoktur. Dashboard'daki **Demo kontrolü çalıştır** veya **Public fiyat kontrolü çalıştır** düğmesi kullanılır; CLI demo kontrolü için `npm run scrape:demo` çalıştırılabilir. Gelecek cron giriş noktası `lib/scheduler/index.ts` dosyasında belgelenmiştir.
 
 ## API
 
@@ -101,6 +132,7 @@ MVP'de arka plan işi yoktur. Dashboard'daki **Demo kontrolü çalıştır** dü
 - `POST /api/observations` (manuel rakip fiyatı)
 - `POST /api/own-prices`
 - `POST /api/scrape/demo`
+- `POST /api/scrape/public` (body: isteğe bağlı `profileId`)
 - `GET /api/dashboard?profileId=`
 
 ## Klasör yapısı

@@ -10,6 +10,14 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const input = competitorSchema.parse(await request.json());
-    return NextResponse.json(await db.competitor.create({ data: { ...input, publicUrl: input.publicUrl || null } }), { status: 201 });
+    return NextResponse.json(await db.competitor.create({ data: {
+      ...input,
+      publicUrl: input.publicUrl || null,
+      priceSelector: input.priceSelector ?? null,
+      roomSelector: input.roomSelector ?? null,
+      boardSelector: input.boardSelector ?? null,
+      cancellationSelector: input.cancellationSelector ?? null,
+      availabilitySelector: input.availabilitySelector ?? null,
+    } }), { status: 201 });
   } catch (error) { return apiError(error); }
 }

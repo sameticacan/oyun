@@ -2,12 +2,22 @@ import { z } from "zod";
 
 export const sourceSchema = z.enum(["manual", "demo", "ets_placeholder"]);
 
+const optionalSelector = z.preprocess(
+  (value) => typeof value === "string" && value.trim() === "" ? null : value,
+  z.string().trim().max(500).nullable().optional(),
+);
+
 export const competitorSchema = z.object({
   name: z.string().trim().min(2).max(120),
   city: z.string().trim().min(2).max(80),
   district: z.string().trim().min(2).max(80),
   source: sourceSchema,
   publicUrl: z.union([z.string().url(), z.literal("")]).optional(),
+  priceSelector: optionalSelector,
+  roomSelector: optionalSelector,
+  boardSelector: optionalSelector,
+  cancellationSelector: optionalSelector,
+  availabilitySelector: optionalSelector,
   active: z.boolean().default(true),
   notes: z.string().max(1000).optional().default(""),
 });
